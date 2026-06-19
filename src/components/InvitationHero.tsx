@@ -11,44 +11,66 @@ export function InvitationHero() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
     >
-      <div className={styles.envelopeWrap}>
-        <img
-          className={styles.envelopeInterior}
-          src={assets.envelopeInterior}
-          alt=""
-          aria-hidden
-          draggable={false}
-        />
+      <div className={styles.canvas}>
+        <div className={styles.envelopeWrap}>
+          <div className={styles.envelopeStack}>
+            <div className={styles.envelopeScale}>
+              <img
+                className={styles.envelopeInterior}
+                src={assets.envelopeInterior}
+                alt=""
+                aria-hidden
+                draggable={false}
+              />
 
-        <img
-          className={styles.ticketBg}
-          src={assets.goldTicketTilt}
-          alt=""
-          aria-hidden
-          draggable={false}
-        />
+              <img
+                className={styles.couplePhotoBw}
+                src={assets.couplePhotoBw}
+                alt=""
+                aria-hidden
+                draggable={false}
+              />
 
-        <img
-          className={styles.envelope}
-          src={assets.envelopeOpen}
-          alt="Open invitation envelope"
-          draggable={false}
-        />
+              <img
+                className={styles.couplePhoto}
+                src={assets.couplePhotoTicketBg}
+                alt=""
+                aria-hidden
+                draggable={false}
+              />
 
-        <div className={styles.ticketText}>
-          <span className={styles.saveWord}>Save</span>
-          <span className={styles.theWord}>the</span>
-          <span className={styles.dateWord}>Date</span>
-          <span className={styles.saveDateNum}>{invitation.saveTheDate}</span>
+              <img
+                className={styles.ticketBg}
+                src={assets.goldTicketTilt}
+                alt=""
+                aria-hidden
+                draggable={false}
+              />
+
+              <img
+                className={styles.envelope}
+                src={assets.envelopeOpen}
+                alt="Open invitation envelope"
+                draggable={false}
+              />
+
+              <div className={styles.ticketText}>
+                <span className={styles.saveWord}>Save</span>
+                <span className={styles.theWord}>the</span>
+                <span className={styles.dateWord}>Date</span>
+                <span className={styles.saveDateNum}>{invitation.saveTheDate}</span>
+              </div>
+
+              <img
+                className={styles.waxSeal}
+                src={assets.waxSealCenter}
+                alt=""
+                aria-hidden
+                draggable={false}
+              />
+            </div>
+          </div>
         </div>
-
-        <img
-          className={styles.waxSeal}
-          src={assets.waxSealCenter}
-          alt=""
-          aria-hidden
-          draggable={false}
-        />
       </div>
     </motion.div>
   )

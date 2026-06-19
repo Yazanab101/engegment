@@ -38,4 +38,6 @@ export const assets = {
   waxSealCenter: '/assets/canva/wax-seal-center.png',
   goldTicketTilt: '/assets/canva/gold-ticket-tilt.png',
   envelopeInterior: '/assets/canva/envelope-interior.png',
+  couplePhotoTicketBg: '/assets/canva/couple-photo-ticket-bg.png',
+  couplePhotoBw: '/assets/canva/couple-photo-bw.png',
 }
