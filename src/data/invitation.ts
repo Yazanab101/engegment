@@ -34,4 +34,8 @@ export const assets = {
   waxSeal: '/assets/canva/wax-seal.png',
   decorativeFrame: '/assets/canva/decorative-frame.png',
   goldTicket: '/assets/canva/gold-ticket.png',
+  envelopeOpen: '/assets/canva/envelope-open-center.png',
+  waxSealCenter: '/assets/canva/wax-seal-center.png',
+  goldTicketTilt: '/assets/canva/gold-ticket-tilt.png',
+  envelopeInterior: '/assets/canva/envelope-interior.png',
 }
