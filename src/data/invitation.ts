@@ -8,6 +8,7 @@ export const invitation = {
   venue: 'The Grand Estate',
   address: '124 Rosewood Lane, Napa Valley, California',
   tagline: 'Our forever\nbegins here',
+  celebrationNote: 'A celebration\nis on its way',
   message:
     'With joyful hearts, we invite you to celebrate our engagement and the beginning of our forever.',
   photos: [
@@ -40,4 +41,5 @@ export const assets = {
   envelopeInterior: '/assets/canva/envelope-interior.png',
   couplePhotoTicketBg: '/assets/canva/couple-photo-ticket-bg.png',
   couplePhotoBw: '/assets/canva/couple-photo-bw.png',
+  tornNoteRight: '/assets/canva/torn-note-right.png',
 }

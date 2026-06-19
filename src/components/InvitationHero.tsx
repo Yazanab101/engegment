@@ -39,6 +39,24 @@ export function InvitationHero() {
                 draggable={false}
               />
 
+              <div className={styles.tornNoteBlock} aria-hidden>
+                <img
+                  className={styles.tornNote}
+                  src={assets.tornNoteRight}
+                  alt=""
+                  draggable={false}
+                />
+                <p className={styles.tornNoteText}>
+                  {invitation.celebrationNote.split('\n').map((line, i) => (
+                    <span key={line}>
+                      {i > 0 && <br />}
+                      {line}
+                    </span>
+                  ))}
+                  <span className={styles.tornNoteHeart}>♥</span>
+                </p>
+              </div>
+
               <img
                 className={styles.ticketBg}
                 src={assets.goldTicketTilt}
