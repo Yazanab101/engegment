@@ -1,0 +1,41 @@
+.accent {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.accent img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.15) brightness(1.08) contrast(0.92);
+  opacity: 0.88;
+}
+
+.topLeft {
+  top: -4%;
+  left: -14%;
+  width: clamp(110px, 28vw, 155px);
+  height: clamp(130px, 32vw, 185px);
+  mask-image: radial-gradient(ellipse 70% 75% at 65% 55%, black 20%, transparent 72%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 75% at 65% 55%, black 20%, transparent 72%);
+}
+
+.bottomRight {
+  bottom: 2%;
+  right: -12%;
+  width: clamp(95px, 24vw, 130px);
+  height: clamp(115px, 28vw, 155px);
+  z-index: 6;
+  mask-image: radial-gradient(ellipse 68% 72% at 40% 48%, black 18%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 68% 72% at 40% 48%, black 18%, transparent 70%);
+}
+
+.bottomRight img {
+  transform: scaleX(-1) rotate(-8deg);
+}
+
+.topLeft img {
+  transform: rotate(-6deg);
+}

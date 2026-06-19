@@ -1,0 +1,29 @@
+.container {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.glow {
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(232, 220, 190, 0.35) 0%,
+    rgba(201, 184, 150, 0.12) 45%,
+    transparent 72%
+  );
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e8dcc0, var(--champagne-gold));
+  box-shadow: 0 0 4px rgba(184, 160, 106, 0.35);
+}

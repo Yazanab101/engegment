@@ -1,0 +1,47 @@
+@font-face {
+  font-family: 'New Icon';
+  src: url('/assets/fonts/new-icon.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Beth Ellen';
+  src: url('/assets/fonts/beth-ellen.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Brittany';
+  src: url('/assets/fonts/brittany.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'TAN Mon Cheri';
+  src: url('/assets/fonts/tan-mon-cheri.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Parfumerie Script';
+  src: url('/assets/fonts/parfumerie.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'The Youngest Serif';
+  src: url('/assets/fonts/youngest-serif.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}

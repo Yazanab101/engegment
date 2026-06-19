@@ -1,0 +1,61 @@
+.header {
+  text-align: center;
+  margin-bottom: clamp(2.5rem, 8vh, 4rem);
+  padding-top: clamp(2rem, 6vh, 3.5rem);
+}
+
+.overline {
+  font-family: var(--font-body);
+  font-size: clamp(0.62rem, 1.8vw, 0.72rem);
+  font-weight: 400;
+  letter-spacing: 0.55em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: clamp(1.25rem, 3vh, 1.75rem);
+}
+
+.namesBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.name {
+  font-family: var(--font-serif);
+  font-size: clamp(1.65rem, 5.5vw, 2.35rem);
+  font-weight: 400;
+  font-optical-sizing: auto;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  line-height: 1.2;
+  font-variation-settings: 'opsz' 24;
+}
+
+.conjunction {
+  font-family: var(--font-serif);
+  font-size: clamp(1rem, 3vw, 1.25rem);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--champagne-gold);
+  letter-spacing: 0;
+  line-height: 1;
+  margin: 0.35rem 0;
+}
+
+.rule {
+  width: 1px;
+  height: clamp(28px, 5vh, 40px);
+  background: linear-gradient(180deg, transparent, var(--champagne), transparent);
+  margin: clamp(1.25rem, 3vh, 1.75rem) auto;
+}
+
+.date {
+  font-family: var(--font-body);
+  font-size: clamp(0.78rem, 2.2vw, 0.88rem);
+  font-weight: 300;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
