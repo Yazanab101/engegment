@@ -6,22 +6,27 @@ import {
   stopInvitationAudio,
   unlockInvitationAudio,
 } from '../lib/audio'
+import { assets } from '../data/invitation'
 import { EnvelopePage } from './EnvelopePage'
 import { InvitationHero } from './InvitationHero'
 import styles from './OpeningExperience.module.css'
 
 export function OpeningExperience() {
+  const [hasSeenIntro, setHasSeenIntro] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
 
   useEffect(() => {
     preloadInvitationAudio()
+    const img = new Image()
+    img.src = assets.envelope
   }, [])
 
   const handleOpen = useCallback(() => {
     if (isOpen || isAnimating) return
     unlockInvitationAudio()
     playEnvelopeOpen()
+    setHasSeenIntro(true)
     setIsAnimating(true)
     setTimeout(() => {
       setIsOpen(true)
@@ -46,6 +51,7 @@ export function OpeningExperience() {
             onOpen={handleOpen}
             disabled={isAnimating}
             exiting={isAnimating}
+            skipIntro={hasSeenIntro}
           />
         ) : (
           <InvitationHero key="hero" onClose={handleClose} disabled={isAnimating} />

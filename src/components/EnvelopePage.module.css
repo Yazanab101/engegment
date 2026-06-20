@@ -1,23 +1,68 @@
 .page {
   min-height: 100dvh;
   width: 100%;
-  background: var(--white);
+  background: var(--ivory);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  padding: clamp(2rem, 8vh, 4.5rem) 1rem clamp(2rem, 6vw, 3rem);
+  justify-content: center;
+  padding: clamp(1.5rem, 5vh, 3rem) 1rem clamp(2rem, 6vw, 3rem);
+  gap: clamp(0.75rem, 2.5vh, 1.5rem);
+}
+
+.introHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: clamp(0.45rem, 1.4vh, 0.75rem);
+  flex-shrink: 0;
+}
+
+.names {
+  margin: 0;
+  font-family: var(--font-luxury-serif);
+  font-size: clamp(1.65rem, 6.5vw, 2.75rem);
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-warm);
+  line-height: 1.25;
+}
+
+.date {
+  margin: 0;
+  font-family: var(--font-luxury-serif);
+  font-size: clamp(1rem, 3.4vw, 1.35rem);
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
+  color: var(--ink-muted);
+  line-height: 1.4;
+}
+
+.subtitle {
+  margin: clamp(0.15rem, 0.5vh, 0.35rem) 0 0;
+  font-family: var(--font-luxury-serif);
+  font-size: clamp(0.95rem, 3vw, 1.15rem);
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: 0.06em;
+  color: var(--ink-warm);
+  line-height: 1.45;
 }
 
 .hitArea {
+  position: relative;
   flex: 0 0 auto;
   width: 100%;
-  max-width: min(96vw, 520px);
+  max-width: min(92vw, 480px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
-  margin-bottom: clamp(-2.5rem, -7vh, -1.25rem);
+  margin: clamp(0.25rem, 1vh, 0.75rem) 0 clamp(-1.5rem, -4vh, -0.75rem);
   border: none;
   background: transparent;
   cursor: pointer;
@@ -30,16 +75,36 @@
 }
 
 .hitArea:focus-visible {
-  outline: 1px solid rgba(0, 0, 0, 0.25);
+  outline: 1px solid rgba(41, 18, 11, 0.25);
   outline-offset: 6px;
+}
+
+.envelopeGlow {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 72%;
+  height: 52%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    ellipse 70% 65% at 50% 50%,
+    rgba(255, 235, 210, 0.45) 0%,
+    rgba(255, 225, 195, 0.18) 42%,
+    transparent 72%
+  );
+  filter: blur(18px);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .stage {
   position: relative;
   width: 100%;
-  max-width: min(96vw, 520px);
+  max-width: min(92vw, 480px);
   aspect-ratio: 1366 / 1417;
   container-type: inline-size;
+  z-index: 1;
+  will-change: transform;
 }
 
 .envelope {
@@ -49,7 +114,9 @@
   width: 98%;
   height: 72%;
   object-fit: contain;
-  filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.08));
+  filter:
+    drop-shadow(0 18px 36px rgba(41, 18, 11, 0.1))
+    drop-shadow(0 6px 14px rgba(41, 18, 11, 0.06));
   user-select: none;
   z-index: 2;
 }
@@ -102,27 +169,38 @@
 }
 
 .tapBottom {
-  font-family: 'New Icon', Georgia, serif;
-  font-size: clamp(0.62rem, 2.058vw, 0.86rem);
-  font-weight: 400;
-  letter-spacing: 0.28em;
+  font-family: var(--font-luxury-serif);
+  font-size: clamp(0.58rem, 2vw, 0.72rem);
+  font-weight: 500;
+  letter-spacing: 4px;
   text-transform: uppercase;
   text-align: center;
-  color: var(--ink);
-  margin-top: clamp(-0.75rem, -2vh, -0.25rem);
+  color: var(--ink-muted);
+  margin-top: clamp(0.25rem, 1vh, 0.75rem);
   pointer-events: none;
   user-select: none;
 }
 
 @media (max-width: 480px) {
   .page {
-    justify-content: center;
     padding: clamp(1rem, 3vh, 2rem) clamp(0.75rem, 3vw, 1rem);
+    gap: clamp(0.5rem, 2vh, 1rem);
   }
 
   .hitArea,
   .stage {
-    max-width: min(98vw, 520px);
+    max-width: min(96vw, 480px);
+  }
+
+  .names {
+    letter-spacing: 0.16em;
+    text-indent: 0.16em;
+    font-size: clamp(1.4rem, 7.5vw, 2rem);
+  }
+
+  .date {
+    letter-spacing: 0.14em;
+    text-indent: 0.14em;
   }
 
   .tagline {
@@ -130,7 +208,12 @@
   }
 
   .tapBottom {
-    font-size: clamp(0.58rem, 2.4cqw, 0.8rem);
-    letter-spacing: 0.22em;
+    letter-spacing: 3px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage {
+    will-change: auto;
   }
 }

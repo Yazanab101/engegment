@@ -11,9 +11,11 @@
 
 :root {
   --white: #ffffff;
+  --ivory: #f8f6f2;
   --ink: #000000;
   --ink-warm: #29120b;
   --ink-muted: #474444;
+  --font-luxury-serif: 'Cormorant Garamond', 'Bodoni Moda', Georgia, 'Times New Roman', serif;
 }
 
 html,
@@ -26,7 +28,7 @@ body,
 
 body {
   font-family: 'New Icon', Georgia, serif;
-  background: var(--white);
+  background: var(--ivory);
   color: var(--ink);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
