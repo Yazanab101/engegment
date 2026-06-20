@@ -238,14 +238,15 @@
 
 .ticketSideNamesText {
   position: absolute;
-  right: -1%;
+  right: 6%;
   top: 50%;
-  transform: translateY(-50%) rotate(-90deg) translateX(8%);
+  transform: translateY(-50%) rotate(90deg);
   transform-origin: center center;
+  margin: 0;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-weight: 700;
-  font-size: clamp(0.38rem, 1.55cqw, 0.62rem);
-  letter-spacing: 0.24em;
+  font-size: 5px;
+  letter-spacing: 3px;
   text-transform: uppercase;
   white-space: nowrap;
   color: #29120b;

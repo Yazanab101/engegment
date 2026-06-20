@@ -98,9 +98,9 @@ export function InvitationHero() {
               </div>
 
               <div className={styles.ticketSideNames} aria-hidden>
-                <span className={styles.ticketSideNamesText}>
+                <p className={styles.ticketSideNamesText}>
                   {invitation.groom} & {invitation.bride}
-                </span>
+                </p>
               </div>
 
               <img
