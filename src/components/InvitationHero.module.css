@@ -36,6 +36,8 @@
   transform-origin: 50% 68%;
   --ticket-top: 18%;
   --ticket-tilt: -15deg;
+  --envelope-right-extend: 50px;
+  --envelope-left-extend: 25px;
 }
 
 .envelopeInterior {
@@ -46,7 +48,8 @@
   height: auto;
   object-fit: contain;
   object-position: left top;
-  transform: scaleX(0.96);
+  transform: scaleX(calc(1 + (var(--envelope-right-extend) + var(--envelope-left-extend)) / 480px))
+    translateX(calc(-1 * var(--envelope-left-extend)));
   transform-origin: left center;
   user-select: none;
   pointer-events: none;
@@ -144,10 +147,12 @@
   width: 100%;
   height: auto;
   object-fit: contain;
+  object-position: left center;
   user-select: none;
   position: relative;
   z-index: 4;
-  transform: scaleX(0.96);
+  transform: scaleX(calc(1 + (var(--envelope-right-extend) + var(--envelope-left-extend)) / 480px))
+    translateX(calc(-1 * var(--envelope-left-extend)));
   transform-origin: left center;
   filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.08));
 }
@@ -219,6 +224,33 @@
   margin-top: 0.15em;
 }
 
+.ticketSideNames {
+  position: absolute;
+  left: 50%;
+  top: var(--ticket-top);
+  width: 60%;
+  aspect-ratio: 798 / 443;
+  transform: translateX(-50%) rotate(var(--ticket-tilt));
+  transform-origin: center center;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.ticketSideNamesText {
+  position: absolute;
+  right: -1%;
+  top: 50%;
+  transform: translateY(-50%) rotate(-90deg) translateX(8%);
+  transform-origin: center center;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  font-size: clamp(0.38rem, 1.55cqw, 0.62rem);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #29120b;
+}
+
 .envelopeCoupleNames {
   position: absolute;
   left: 50%;
@@ -226,13 +258,23 @@
   width: 56%;
   margin: 0;
   transform: translateX(-50%);
-  font-family: 'TAN Mon Cheri', serif;
-  font-size: clamp(0.82rem, 3.2cqw, 1.35rem);
-  letter-spacing: 0.04em;
+  font-family: 'New Icon', Georgia, serif;
+  font-size: clamp(0.72rem, 2.6cqw, 1.1rem);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
   text-align: center;
   color: #29120b;
   pointer-events: none;
   z-index: 5;
+  white-space: nowrap;
+}
+
+.envelopeCoupleAmp {
+  font-family: 'Parfumerie Script', cursive;
+  font-size: 1.25em;
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 400;
 }
 
 .floralBehindLeft {

@@ -97,6 +97,12 @@ export function InvitationHero() {
                 <span className={styles.saveDateNum}>{invitation.saveTheDate}</span>
               </div>
 
+              <div className={styles.ticketSideNames} aria-hidden>
+                <span className={styles.ticketSideNamesText}>
+                  {invitation.groom} & {invitation.bride}
+                </span>
+              </div>
+
               <img
                 className={styles.waxSeal}
                 src={assets.waxSealCenter}
@@ -105,7 +111,11 @@ export function InvitationHero() {
                 draggable={false}
               />
 
-              <p className={styles.envelopeCoupleNames}>{invitation.coupleNames}</p>
+              <p className={styles.envelopeCoupleNames} aria-hidden>
+                {invitation.groom}{' '}
+                <span className={styles.envelopeCoupleAmp}>&amp;</span>{' '}
+                {invitation.bride}
+              </p>
 
               <img
                 className={styles.envelopeBottomFloral}

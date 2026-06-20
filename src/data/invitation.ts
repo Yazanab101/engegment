@@ -1,7 +1,6 @@
 export const invitation = {
   bride: 'Nora',
   groom: 'Yazan',
-  coupleNames: 'Yazan & Nora',
   saveTheDate: '10.10.2026',
   dateShort: '10.10.2026',
   date: 'Saturday, October 10, 2026',
