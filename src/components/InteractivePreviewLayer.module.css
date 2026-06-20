@@ -1,0 +1,179 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 4vw, 2rem);
+  pointer-events: none;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 499;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: rgba(248, 246, 242, 0.65);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  cursor: zoom-out;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.previewFrame {
+  pointer-events: auto;
+  max-height: min(82vh, 720px);
+  box-shadow:
+    0 28px 70px rgba(41, 18, 11, 0.16),
+    0 8px 24px rgba(41, 18, 11, 0.08);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.previewPhoto {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(92vw, 480px);
+  max-height: min(78vh, 680px);
+  object-fit: contain;
+  border-radius: 8px;
+  border: clamp(4px, 0.8vw, 6px) solid #b8b4ae;
+  background: #fff;
+}
+
+.previewPhotoSmall {
+  max-width: min(78vw, 340px);
+  max-height: min(70vh, 520px);
+}
+
+.previewTornNote {
+  position: relative;
+  width: min(88vw, 380px);
+  aspect-ratio: 110 / 175;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.previewTornNoteImg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  border-radius: 8px;
+}
+
+.previewTornNoteText {
+  position: absolute;
+  inset: 4% 10% 26%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 20%;
+  gap: 0.08em;
+  font-family: 'Brittany', cursive;
+  font-size: clamp(1.1rem, 4.5vw, 1.65rem);
+  text-align: center;
+  color: #1a1f2e;
+  pointer-events: none;
+}
+
+.previewTornNoteLines {
+  display: block;
+  line-height: 1.08;
+}
+
+.previewTornNoteHeart {
+  display: block;
+  margin-top: 0.08em;
+  font-size: 0.85em;
+}
+
+.previewTicket {
+  width: min(94vw, 420px);
+}
+
+.previewTicketInner {
+  transform: rotate(-8deg);
+  transform-origin: center center;
+}
+
+.previewTicketBg {
+  display: block;
+  width: 100%;
+  height: auto;
+  transform: scaleX(-1);
+  border-radius: 8px;
+}
+
+.previewTicketText {
+  position: absolute;
+  inset: 0;
+  aspect-ratio: 798 / 443;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8% 6% 10%;
+  color: #29120b;
+  text-align: center;
+  pointer-events: none;
+}
+
+.previewTicketText .saveWord,
+.previewTicketText .dateWord {
+  font-family: 'Brittany', cursive;
+  font-size: clamp(1.75rem, 8vw, 2.75rem);
+  line-height: 0.95;
+}
+
+.previewTicketText .theWord {
+  font-family: 'TAN Mon Cheri', serif;
+  font-size: clamp(1rem, 4.5vw, 1.35rem);
+  margin: 0.1em 0;
+}
+
+.previewTicketText .saveDateNum {
+  font-family: 'TAN Mon Cheri', serif;
+  font-size: clamp(1.05rem, 5vw, 1.5rem);
+  letter-spacing: 0.06em;
+  margin-top: 0.15em;
+}
+
+.previewTicketSideNames {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.previewTicketSideNamesText {
+  position: absolute;
+  right: 6%;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  transform-origin: center center;
+  margin: 0;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  font-size: clamp(8px, 2vw, 11px);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #29120b;
+}
+
+.previewTicketRelative {
+  position: relative;
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+}

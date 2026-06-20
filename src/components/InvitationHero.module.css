@@ -65,11 +65,29 @@
   z-index: 0;
 }
 
-.couplePhotoBw {
+.couplePhotoWrap {
+  position: absolute;
+  left: 36%;
+  top: -20%;
+  width: 32%;
+  z-index: 1;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.couplePhotoBwWrap {
   position: absolute;
   left: 20%;
   top: 1%;
   width: 20%;
+  z-index: 1;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.couplePhotoBw {
+  display: block;
+  width: 100%;
   aspect-ratio: 3 / 5;
   height: auto;
   box-sizing: border-box;
@@ -79,15 +97,12 @@
   object-position: center;
   user-select: none;
   pointer-events: none;
-  z-index: 1;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .couplePhoto {
-  position: absolute;
-  left: 36%;
-  top: -20%;
-  width: 32%;
+  display: block;
+  width: 100%;
   aspect-ratio: 3 / 4;
   height: auto;
   box-sizing: border-box;
@@ -97,7 +112,6 @@
   object-position: center;
   user-select: none;
   pointer-events: none;
-  z-index: 1;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
@@ -108,8 +122,8 @@
   width: 38%;
   aspect-ratio: 110 / 175;
   transform-origin: center center;
-  pointer-events: none;
   z-index: 2;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .tornNote {
@@ -155,6 +169,7 @@
   object-fit: contain;
   object-position: left center;
   user-select: none;
+  pointer-events: none;
   position: relative;
   z-index: 4;
   transform: scaleX(calc(1 + (var(--envelope-right-extend) + var(--envelope-left-extend)) / 100cqw))
@@ -175,6 +190,43 @@
   pointer-events: none;
   z-index: 6;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.12));
+}
+
+.ticketPreviewAnchor {
+  position: absolute;
+  left: 50%;
+  top: var(--ticket-top);
+  width: 60%;
+  transform: translateX(-50%) rotate(var(--ticket-tilt));
+  transform-origin: center center;
+  z-index: 8;
+  aspect-ratio: 798 / 443;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ticketGroupInner {
+  width: 100%;
+  height: 100%;
+  transform: none;
+}
+
+.ticketGroupRelative {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.ticketGroupSource {
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tornNoteInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .ticketRevealLayer {
@@ -414,7 +466,7 @@
     transform-origin: 50% 66%;
   }
 
-  .couplePhoto {
+  .couplePhotoWrap {
     top: -16%;
   }
 
