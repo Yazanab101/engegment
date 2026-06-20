@@ -24,6 +24,22 @@ export function InvitationHero() {
               />
 
               <img
+                className={styles.floralBehindLeft}
+                src={assets.floralBottomLeft}
+                alt=""
+                aria-hidden
+                draggable={false}
+              />
+
+              <img
+                className={styles.floralBehindRight}
+                src={assets.floralBottomLeft}
+                alt=""
+                aria-hidden
+                draggable={false}
+              />
+
+              <img
                 className={styles.couplePhotoBw}
                 src={assets.couplePhotoBw}
                 alt=""
@@ -47,12 +63,14 @@ export function InvitationHero() {
                   draggable={false}
                 />
                 <p className={styles.tornNoteText}>
-                  {invitation.celebrationNote.split('\n').map((line, i) => (
-                    <span key={line}>
-                      {i > 0 && <br />}
-                      {line}
-                    </span>
-                  ))}
+                  <span className={styles.tornNoteLines}>
+                    {invitation.celebrationNote.split('\n').map((line, i) => (
+                      <span key={line}>
+                        {i > 0 && <br />}
+                        {line}
+                      </span>
+                    ))}
+                  </span>
                   <span className={styles.tornNoteHeart}>♥</span>
                 </p>
               </div>
@@ -82,6 +100,14 @@ export function InvitationHero() {
               <img
                 className={styles.waxSeal}
                 src={assets.waxSealCenter}
+                alt=""
+                aria-hidden
+                draggable={false}
+              />
+
+              <img
+                className={styles.envelopeBottomFloral}
+                src={assets.envelopeBottomFloral}
                 alt=""
                 aria-hidden
                 draggable={false}

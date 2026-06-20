@@ -42,4 +42,6 @@ export const assets = {
   couplePhotoTicketBg: '/assets/canva/couple-photo-ticket-bg.png',
   couplePhotoBw: '/assets/canva/couple-photo-bw.png',
   tornNoteRight: '/assets/canva/torn-note-right.png',
+  floralBottomLeft: '/assets/canva/floral-bottom-left.png',
+  envelopeBottomFloral: '/assets/canva/envelope-bottom-floral.png',
 }
