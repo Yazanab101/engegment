@@ -116,8 +116,8 @@
 
 @media (max-width: 480px) {
   .page {
-    padding: clamp(1rem, 4vw, 1.5rem) clamp(0.75rem, 3vw, 1rem)
-      clamp(1.5rem, 5vh, 2rem);
+    justify-content: center;
+    padding: clamp(1rem, 3vh, 2rem) clamp(0.75rem, 3vw, 1rem);
   }
 
   .hitArea,
