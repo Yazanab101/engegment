@@ -20,8 +20,9 @@
 
 .envelopeWrap {
   position: relative;
-  width: min(62vw, 480px);
+  width: min(88vw, 480px);
   container-type: inline-size;
+  container-name: collage;
 }
 
 .envelopeStack {
@@ -32,12 +33,14 @@
 .envelopeScale {
   position: relative;
   width: 100%;
-  transform: scale(1.52, 1.32);
+  transform: scale(var(--collage-scale-x, 1.52), var(--collage-scale-y, 1.32));
   transform-origin: 50% 68%;
   --ticket-top: 18%;
   --ticket-tilt: -15deg;
-  --envelope-right-extend: 50px;
-  --envelope-left-extend: 25px;
+  --envelope-right-extend: 10.42cqw;
+  --envelope-left-extend: 5.21cqw;
+  --collage-scale-x: 1.52;
+  --collage-scale-y: 1.32;
 }
 
 .envelopeInterior {
@@ -48,7 +51,7 @@
   height: auto;
   object-fit: contain;
   object-position: left top;
-  transform: scaleX(calc(1 + (var(--envelope-right-extend) + var(--envelope-left-extend)) / 480px))
+  transform: scaleX(calc(1 + (var(--envelope-right-extend) + var(--envelope-left-extend)) / 100cqw))
     translateX(calc(-1 * var(--envelope-left-extend)));
   transform-origin: left center;
   user-select: none;
@@ -64,7 +67,7 @@
   aspect-ratio: 3 / 5;
   height: auto;
   box-sizing: border-box;
-  border: 5px solid #b8b4ae;
+  border: clamp(3px, 0.9cqw, 5px) solid #b8b4ae;
   transform: rotate(-12deg);
   transform-origin: center center;
   object-fit: cover;
@@ -83,7 +86,7 @@
   aspect-ratio: 3 / 4;
   height: auto;
   box-sizing: border-box;
-  border: 6px solid #b8b4ae;
+  border: clamp(4px, 1.1cqw, 6px) solid #b8b4ae;
   transform: rotate(-4deg);
   transform-origin: center center;
   object-fit: cover;
@@ -151,7 +154,7 @@
   user-select: none;
   position: relative;
   z-index: 4;
-  transform: scaleX(calc(1 + (var(--envelope-right-extend) + var(--envelope-left-extend)) / 480px))
+  transform: scaleX(calc(1 + (var(--envelope-right-extend) + var(--envelope-left-extend)) / 100cqw))
     translateX(calc(-1 * var(--envelope-left-extend)));
   transform-origin: left center;
   filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.08));
@@ -245,8 +248,8 @@
   margin: 0;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-weight: 700;
-  font-size: 5px;
-  letter-spacing: 3px;
+  font-size: 6px;
+  letter-spacing: clamp(1.5px, 0.55cqw, 3px);
   text-transform: uppercase;
   white-space: nowrap;
   color: #29120b;
@@ -315,5 +318,88 @@
   user-select: none;
   pointer-events: none;
   z-index: 7;
+}
+
+/* ── Container queries (collage artboard) ── */
+@container collage (max-width: 340px) {
+  .envelopeScale {
+    --collage-scale-x: 1;
+    --collage-scale-y: 0.98;
+    transform-origin: 50% 66%;
+  }
+
+  .couplePhoto {
+    top: -16%;
+  }
+
+  .tornNoteBlock {
+    top: -10%;
+  }
+
+  .ticketSideNamesText {
+    right: 8%;
+  }
+}
+
+@container collage (min-width: 341px) and (max-width: 420px) {
+  .envelopeScale {
+    --collage-scale-x: 1.12;
+    --collage-scale-y: 1.06;
+    transform-origin: 50% 67%;
+  }
+}
+
+@container collage (min-width: 421px) and (max-width: 520px) {
+  .envelopeScale {
+    --collage-scale-x: 1.32;
+    --collage-scale-y: 1.18;
+  }
+}
+
+/* ── Viewport breakpoints ── */
+@media (max-width: 480px) {
+  .page {
+    padding: clamp(1rem, 4vw, 1.5rem) clamp(0.75rem, 3vw, 1.25rem);
+    align-items: flex-start;
+    padding-top: clamp(1.25rem, 5vh, 2rem);
+  }
+
+  .canvas {
+    width: 100%;
+    min-height: min(92dvh, 820px);
+    overflow: hidden;
+  }
+
+  .envelopeWrap {
+    width: min(92vw, 480px);
+  }
+}
+
+@media (min-width: 481px) and (max-width: 767px) {
+  .envelopeWrap {
+    width: min(72vw, 480px);
+  }
+
+  .envelopeScale {
+    --collage-scale-x: 1.28;
+    --collage-scale-y: 1.14;
+  }
+}
+
+@media (min-width: 768px) {
+  .envelopeWrap {
+    width: min(62vw, 480px);
+  }
+
+  .envelopeScale {
+    --collage-scale-x: 1.52;
+    --collage-scale-y: 1.32;
+  }
+}
+
+@media (min-width: 1200px) {
+  .canvas {
+    width: min(92vw, 960px);
+  }
 }
 
