@@ -5,18 +5,19 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: clamp(1.5rem, 5vw, 2.5rem) 1rem clamp(2rem, 6vw, 3rem);
+  justify-content: flex-start;
+  padding: clamp(2rem, 8vh, 4.5rem) 1rem clamp(2rem, 6vw, 3rem);
 }
 
 .hitArea {
-  flex: 1;
+  flex: 0 0 auto;
   width: 100%;
   max-width: min(96vw, 520px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
+  margin-bottom: clamp(-2.5rem, -7vh, -1.25rem);
   border: none;
   background: transparent;
   cursor: pointer;
@@ -108,7 +109,7 @@
   text-transform: uppercase;
   text-align: center;
   color: var(--ink);
-  margin-top: clamp(1.5rem, 4vh, 2.5rem);
+  margin-top: clamp(-0.75rem, -2vh, -0.25rem);
   pointer-events: none;
   user-select: none;
 }

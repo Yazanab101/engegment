@@ -10,6 +10,7 @@ export const invitation = {
   tagline: 'Our forever\nbegins here',
   celebrationNote: 'A celebration\nis on its way',
   joinUsMessage: 'We hope you\'ll join us',
+  returnToEnvelope: 'Click to return to envelope',
   message:
     'With joyful hearts, we invite you to celebrate our engagement and the beginning of our forever.',
   photos: [

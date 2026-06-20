@@ -17,6 +17,13 @@ export function OpeningExperience() {
     }, 520)
   }, [isOpen, isAnimating])
 
+  const handleClose = useCallback(() => {
+    if (!isOpen || isAnimating) return
+    setIsAnimating(true)
+    setIsOpen(false)
+    setTimeout(() => setIsAnimating(false), 520)
+  }, [isOpen, isAnimating])
+
   return (
     <div className={styles.root}>
       <AnimatePresence mode="wait">
@@ -28,7 +35,7 @@ export function OpeningExperience() {
             exiting={isAnimating}
           />
         ) : (
-          <InvitationHero key="hero" />
+          <InvitationHero key="hero" onClose={handleClose} disabled={isAnimating} />
         )}
       </AnimatePresence>
     </div>

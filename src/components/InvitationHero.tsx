@@ -9,7 +9,12 @@ import {
 } from './invitationReveal'
 import styles from './InvitationHero.module.css'
 
-export function InvitationHero() {
+interface InvitationHeroProps {
+  onClose: () => void
+  disabled?: boolean
+}
+
+export function InvitationHero({ onClose, disabled }: InvitationHeroProps) {
   return (
     <motion.div
       className={styles.page}
@@ -201,6 +206,15 @@ export function InvitationHero() {
           <p className={styles.belowEnvelopeDate}>{invitation.dateShort}</p>
           <p className={styles.belowEnvelopeJoin}>{invitation.joinUsMessage}</p>
         </motion.footer>
+
+        <button
+          type="button"
+          className={styles.returnToEnvelope}
+          onClick={onClose}
+          disabled={disabled}
+        >
+          {invitation.returnToEnvelope}
+        </button>
       </div>
     </motion.div>
   )
