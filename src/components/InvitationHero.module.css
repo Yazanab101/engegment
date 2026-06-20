@@ -219,6 +219,22 @@
   margin-top: 0.15em;
 }
 
+.envelopeCoupleNames {
+  position: absolute;
+  left: 50%;
+  bottom: 13%;
+  width: 56%;
+  margin: 0;
+  transform: translateX(-50%);
+  font-family: 'TAN Mon Cheri', serif;
+  font-size: clamp(0.82rem, 3.2cqw, 1.35rem);
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: #29120b;
+  pointer-events: none;
+  z-index: 5;
+}
+
 .floralBehindLeft {
   position: absolute;
   left: 18%;

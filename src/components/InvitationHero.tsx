@@ -105,6 +105,8 @@ export function InvitationHero() {
                 draggable={false}
               />
 
+              <p className={styles.envelopeCoupleNames}>{invitation.coupleNames}</p>
+
               <img
                 className={styles.envelopeBottomFloral}
                 src={assets.envelopeBottomFloral}
