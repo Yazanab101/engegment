@@ -4,23 +4,28 @@
   background: var(--white);
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: clamp(2rem, 8vw, 4rem) clamp(1.5rem, 6vw, 3rem);
+  justify-content: flex-start;
+  padding: clamp(3.25rem, 11vh, 6rem) clamp(1.5rem, 6vw, 3rem) clamp(2rem, 6vh, 3.5rem);
 }
 
 .canvas {
   position: relative;
   width: min(94vw, 920px);
-  min-height: min(88dvh, 920px);
+  min-height: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  gap: clamp(1.25rem, 4vh, 2.25rem);
   background: var(--white);
+  overflow: visible;
 }
 
 .envelopeWrap {
   position: relative;
   width: min(88vw, 480px);
+  padding-top: clamp(2.75rem, 20cqw, 5.5rem);
+  overflow: visible;
   container-type: inline-size;
   container-name: collage;
 }
@@ -28,6 +33,7 @@
 .envelopeStack {
   position: relative;
   width: 100%;
+  overflow: visible;
 }
 
 .envelopeScale {
@@ -282,6 +288,62 @@
   font-weight: 400;
 }
 
+.belowEnvelope {
+  width: min(88vw, 480px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: clamp(0.45rem, 2cqw, 0.75rem);
+  padding: 0 clamp(0.5rem, 2vw, 1rem);
+}
+
+.belowEnvelopeNames {
+  margin: 0;
+  font-family: 'New Icon', Georgia, serif;
+  font-size: clamp(0.72rem, 2.8cqw, 1.05rem);
+  font-weight: 400;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: #29120b;
+  white-space: nowrap;
+  line-height: 1.15;
+}
+
+.belowEnvelopeAmp {
+  font-family: 'Parfumerie Script', cursive;
+  font-size: clamp(1.25rem, 5cqw, 1.85rem);
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 400;
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 0.06em;
+  line-height: 0;
+  position: relative;
+  top: 0.05em;
+}
+
+.belowEnvelopeDate {
+  margin: 0;
+  font-family: 'The Youngest Serif', 'New Icon', Georgia, serif;
+  font-size: clamp(0.65rem, 2.4cqw, 0.95rem);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  color: #29120b;
+}
+
+.belowEnvelopeJoin {
+  margin: clamp(0.15rem, 0.8cqw, 0.35rem) 0 0;
+  font-family: 'Beth Ellen', cursive;
+  font-size: clamp(0.85rem, 3.2cqw, 1.15rem);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: #29120b;
+  line-height: 1.35;
+}
+
 .floralBehindLeft {
   position: absolute;
   left: 18%;
@@ -360,19 +422,19 @@
 /* ── Viewport breakpoints ── */
 @media (max-width: 480px) {
   .page {
-    padding: clamp(1rem, 4vw, 1.5rem) clamp(0.75rem, 3vw, 1.25rem);
+    padding: clamp(2.5rem, 9vh, 4rem) clamp(0.75rem, 3vw, 1.25rem) clamp(1.5rem, 5vh, 2rem);
     align-items: flex-start;
-    padding-top: clamp(1.25rem, 5vh, 2rem);
   }
 
   .canvas {
     width: 100%;
-    min-height: min(92dvh, 820px);
-    overflow: hidden;
+    min-height: 0;
+    overflow: visible;
   }
 
   .envelopeWrap {
     width: min(92vw, 480px);
+    padding-top: clamp(2.25rem, 22cqw, 4.5rem);
   }
 }
 

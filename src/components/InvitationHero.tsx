@@ -186,6 +186,21 @@ export function InvitationHero() {
             </div>
           </div>
         </div>
+
+        <motion.footer
+          className={styles.belowEnvelope}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={revealTransition(REVEAL.frontFlowers + 0.35, 0.9)}
+        >
+          <p className={styles.belowEnvelopeNames}>
+            {invitation.groom}{' '}
+            <span className={styles.belowEnvelopeAmp}>&amp;</span>{' '}
+            {invitation.bride}
+          </p>
+          <p className={styles.belowEnvelopeDate}>{invitation.dateShort}</p>
+          <p className={styles.belowEnvelopeJoin}>{invitation.joinUsMessage}</p>
+        </motion.footer>
       </div>
     </motion.div>
   )

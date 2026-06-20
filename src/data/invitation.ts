@@ -9,6 +9,7 @@ export const invitation = {
   address: '124 Rosewood Lane, Napa Valley, California',
   tagline: 'Our forever\nbegins here',
   celebrationNote: 'A celebration\nis on its way',
+  joinUsMessage: 'We hope you\'ll join us',
   message:
     'With joyful hearts, we invite you to celebrate our engagement and the beginning of our forever.',
   photos: [
