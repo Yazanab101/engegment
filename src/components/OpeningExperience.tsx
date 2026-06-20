@@ -1,5 +1,11 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
+import {
+  playEnvelopeOpen,
+  preloadInvitationAudio,
+  stopInvitationAudio,
+  unlockInvitationAudio,
+} from '../lib/audio'
 import { EnvelopePage } from './EnvelopePage'
 import { InvitationHero } from './InvitationHero'
 import styles from './OpeningExperience.module.css'
@@ -8,8 +14,14 @@ export function OpeningExperience() {
   const [isOpen, setIsOpen] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
 
+  useEffect(() => {
+    preloadInvitationAudio()
+  }, [])
+
   const handleOpen = useCallback(() => {
     if (isOpen || isAnimating) return
+    unlockInvitationAudio()
+    playEnvelopeOpen()
     setIsAnimating(true)
     setTimeout(() => {
       setIsOpen(true)
@@ -19,6 +31,7 @@ export function OpeningExperience() {
 
   const handleClose = useCallback(() => {
     if (!isOpen || isAnimating) return
+    stopInvitationAudio()
     setIsAnimating(true)
     setIsOpen(false)
     setTimeout(() => setIsAnimating(false), 520)

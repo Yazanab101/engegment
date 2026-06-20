@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useInvitationAudio } from '../hooks/useInvitationAudio'
 import { assets, invitation } from '../data/invitation'
 import {
   REVEAL,
@@ -15,6 +16,8 @@ interface InvitationHeroProps {
 }
 
 export function InvitationHero({ onClose, disabled }: InvitationHeroProps) {
+  useInvitationAudio()
+
   return (
     <motion.div
       className={styles.page}
