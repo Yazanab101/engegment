@@ -1,5 +1,12 @@
 import { motion } from 'framer-motion'
 import { assets, invitation } from '../data/invitation'
+import {
+  REVEAL,
+  revealSpring,
+  revealTransition,
+  slideUpReveal,
+  ticketSlideReveal,
+} from './invitationReveal'
 import styles from './InvitationHero.module.css'
 
 export function InvitationHero() {
@@ -15,47 +22,71 @@ export function InvitationHero() {
         <div className={styles.envelopeWrap}>
           <div className={styles.envelopeStack}>
             <div className={styles.envelopeScale}>
-              <img
+              {/* Envelope back — fades in first, no movement */}
+              <motion.img
                 className={styles.envelopeInterior}
                 src={assets.envelopeInterior}
                 alt=""
                 aria-hidden
                 draggable={false}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={revealTransition(REVEAL.envelopeBack, 0.85)}
               />
 
-              <img
+              {/* Top flowers — behind photos */}
+              <motion.img
                 className={styles.floralBehindLeft}
                 src={assets.floralBottomLeft}
                 alt=""
                 aria-hidden
                 draggable={false}
+                initial={{ opacity: 0, y: 48, x: -24, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, x: 0, scale: 1 }}
+                transition={revealSpring(REVEAL.topFlowers)}
               />
 
-              <img
+              <motion.img
                 className={styles.floralBehindRight}
                 src={assets.floralBottomLeft}
                 alt=""
                 aria-hidden
                 draggable={false}
+                initial={{ opacity: 0, y: 48, x: 24, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, x: 0, scale: 1 }}
+                transition={revealSpring(REVEAL.topFlowers)}
               />
 
-              <img
-                className={styles.couplePhotoBw}
-                src={assets.couplePhotoBw}
-                alt=""
-                aria-hidden
-                draggable={false}
-              />
-
-              <img
+              {/* Inserted items — slide up from inside the envelope */}
+              <motion.img
                 className={styles.couplePhoto}
                 src={assets.couplePhotoTicketBg}
                 alt=""
                 aria-hidden
                 draggable={false}
+                initial={{ ...slideUpReveal.initial, rotate: -4 }}
+                animate={{ ...slideUpReveal.animate, rotate: -4 }}
+                transition={revealSpring(REVEAL.couplePhoto)}
               />
 
-              <div className={styles.tornNoteBlock} aria-hidden>
+              <motion.img
+                className={styles.couplePhotoBw}
+                src={assets.couplePhotoBw}
+                alt=""
+                aria-hidden
+                draggable={false}
+                initial={{ opacity: 0, x: 28, y: 120, scale: 0.96, rotate: -12 }}
+                animate={{ opacity: 1, x: 0, y: 0, scale: 1, rotate: -12 }}
+                transition={revealSpring(REVEAL.couplePhotoBw)}
+              />
+
+              <motion.div
+                className={styles.tornNoteBlock}
+                aria-hidden
+                initial={{ opacity: 0, x: -32, y: 120, scale: 0.96, rotate: 7 }}
+                animate={{ opacity: 1, x: 0, y: 0, scale: 1, rotate: 7 }}
+                transition={revealSpring(REVEAL.tornNote)}
+              >
                 <img
                   className={styles.tornNote}
                   src={assets.tornNoteRight}
@@ -73,16 +104,24 @@ export function InvitationHero() {
                   </span>
                   <span className={styles.tornNoteHeart}>♥</span>
                 </p>
-              </div>
+              </motion.div>
 
-              <img
-                className={styles.ticketBg}
-                src={assets.goldTicketTilt}
-                alt=""
-                aria-hidden
-                draggable={false}
-              />
+              <motion.div
+                className={`${styles.ticketRevealLayer} ${styles.ticketRevealLayerBg}`}
+                initial={ticketSlideReveal.initial}
+                animate={ticketSlideReveal.animate}
+                transition={revealSpring(REVEAL.ticket)}
+              >
+                <img
+                  className={styles.ticketBg}
+                  src={assets.goldTicketTilt}
+                  alt=""
+                  aria-hidden
+                  draggable={false}
+                />
+              </motion.div>
 
+              {/* Envelope front — fixed, no reveal motion */}
               <img
                 className={styles.envelope}
                 src={assets.envelopeOpen}
@@ -90,19 +129,35 @@ export function InvitationHero() {
                 draggable={false}
               />
 
-              <div className={styles.ticketText}>
-                <span className={styles.saveWord}>Save</span>
-                <span className={styles.theWord}>the</span>
-                <span className={styles.dateWord}>Date</span>
-                <span className={styles.saveDateNum}>{invitation.saveTheDate}</span>
-              </div>
+              <motion.div
+                className={`${styles.ticketRevealLayer} ${styles.ticketRevealLayerText}`}
+                initial={ticketSlideReveal.initial}
+                animate={ticketSlideReveal.animate}
+                transition={revealSpring(REVEAL.ticket)}
+              >
+                <div className={styles.ticketText}>
+                  <span className={styles.saveWord}>Save</span>
+                  <span className={styles.theWord}>the</span>
+                  <span className={styles.dateWord}>Date</span>
+                  <span className={styles.saveDateNum}>{invitation.saveTheDate}</span>
+                </div>
+              </motion.div>
 
-              <div className={styles.ticketSideNames} aria-hidden>
-                <p className={styles.ticketSideNamesText}>
-                  {invitation.groom} & {invitation.bride}
-                </p>
-              </div>
+              <motion.div
+                className={`${styles.ticketRevealLayer} ${styles.ticketRevealLayerText}`}
+                aria-hidden
+                initial={ticketSlideReveal.initial}
+                animate={ticketSlideReveal.animate}
+                transition={revealSpring(REVEAL.ticket)}
+              >
+                <div className={styles.ticketSideNames}>
+                  <p className={styles.ticketSideNamesText}>
+                    {invitation.groom} & {invitation.bride}
+                  </p>
+                </div>
+              </motion.div>
 
+              {/* Wax seal — fixed, no reveal motion */}
               <img
                 className={styles.waxSeal}
                 src={assets.waxSealCenter}
@@ -117,12 +172,16 @@ export function InvitationHero() {
                 {invitation.bride}
               </p>
 
-              <img
+              {/* Front flowers — on top of ticket/envelope */}
+              <motion.img
                 className={styles.envelopeBottomFloral}
                 src={assets.envelopeBottomFloral}
                 alt=""
                 aria-hidden
                 draggable={false}
+                initial={{ opacity: 0, y: 36, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={revealSpring(REVEAL.frontFlowers)}
               />
             </div>
           </div>

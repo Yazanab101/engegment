@@ -68,7 +68,6 @@
   height: auto;
   box-sizing: border-box;
   border: clamp(3px, 0.9cqw, 5px) solid #b8b4ae;
-  transform: rotate(-12deg);
   transform-origin: center center;
   object-fit: cover;
   object-position: center;
@@ -87,7 +86,6 @@
   height: auto;
   box-sizing: border-box;
   border: clamp(4px, 1.1cqw, 6px) solid #b8b4ae;
-  transform: rotate(-4deg);
   transform-origin: center center;
   object-fit: cover;
   object-position: center;
@@ -103,7 +101,6 @@
   top: -14%;
   width: 38%;
   aspect-ratio: 110 / 175;
-  transform: rotate(7deg);
   transform-origin: center center;
   pointer-events: none;
   z-index: 2;
@@ -174,28 +171,37 @@
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.12));
 }
 
-.ticketBg {
+.ticketRevealLayer {
   position: absolute;
   left: 50%;
   top: var(--ticket-top);
   width: 60%;
-  transform: translateX(-50%) rotate(var(--ticket-tilt)) scaleX(-1);
   transform-origin: center center;
+  pointer-events: none;
+}
+
+.ticketRevealLayerBg {
   z-index: 3;
+}
+
+.ticketRevealLayerText {
+  z-index: 5;
+}
+
+.ticketBg {
+  display: block;
+  width: 100%;
   height: auto;
+  transform: rotate(var(--ticket-tilt)) scaleX(-1);
+  transform-origin: center center;
   user-select: none;
   pointer-events: none;
 }
 
 .ticketText {
-  position: absolute;
-  left: 50%;
-  top: var(--ticket-top);
-  width: 60%;
-  transform: translateX(-50%) rotate(var(--ticket-tilt));
+  width: 100%;
+  transform: rotate(var(--ticket-tilt));
   transform-origin: center center;
-  pointer-events: none;
-  z-index: 5;
   aspect-ratio: 798 / 443;
   display: flex;
   flex-direction: column;
@@ -228,15 +234,10 @@
 }
 
 .ticketSideNames {
-  position: absolute;
-  left: 50%;
-  top: var(--ticket-top);
-  width: 60%;
+  width: 100%;
   aspect-ratio: 798 / 443;
-  transform: translateX(-50%) rotate(var(--ticket-tilt));
+  transform: rotate(var(--ticket-tilt));
   transform-origin: center center;
-  pointer-events: none;
-  z-index: 5;
 }
 
 .ticketSideNamesText {
