@@ -2,6 +2,7 @@ import { Fragment, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { assets, invitation } from '../data/invitation'
 import { luxuryEase, revealSpring } from './invitationReveal'
+import { TapIndicator } from './TapIndicator'
 import styles from './EnvelopePage.module.css'
 
 interface EnvelopePageProps {
@@ -117,6 +118,8 @@ export function EnvelopePage({ onOpen, disabled, exiting, skipIntro }: EnvelopeP
               </Fragment>
             ))}
           </p>
+
+          <TapIndicator active={introReady && !skipIntro && !exiting && !disabled} />
 
           <img
             className={styles.floralLeft}
