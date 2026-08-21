@@ -1,9 +1,9 @@
 export const invitation = {
   bride: 'Ashley',
   groom: 'Matthew',
-  saveTheDate: '10.10.2026',
-  dateShort: '10.10.2026',
-  date: 'Saturday, October 10, 2026',
+  saveTheDate: '21.11.2026',
+  dateShort: '21.11.2026',
+  date: 'Saturday, November 21, 2026',
   time: 'Six o\'clock in the evening',
   venue: 'The Grand Estate',
   address: '124 Rosewood Lane, Napa Valley, California',
