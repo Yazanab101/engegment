@@ -119,7 +119,7 @@ export function EnvelopePage({ onOpen, disabled, exiting, skipIntro }: EnvelopeP
             ))}
           </p>
 
-          <TapIndicator active={introReady && !skipIntro && !exiting && !disabled} />
+          <TapIndicator active={introReady && !exiting && !disabled} />
 
           <img
             className={styles.floralLeft}
