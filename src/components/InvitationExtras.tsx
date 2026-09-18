@@ -156,10 +156,10 @@ export function InvitationExtras() {
         </div>
       )}
 
-      {(event.dressCode || event.parkingInfo || event.additionalInfo) && (
+      {(event.parkingInfo || event.additionalInfo || event.eventStartTime) && (
         <div className={styles.card}>
-          {event.dressCode && (
-            <p><strong>{t('dressCode')}:</strong> {event.dressCode}</p>
+          {event.eventStartTime && (
+            <p><strong>{t('celebrationTime')}:</strong> {event.eventStartTime}</p>
           )}
           {event.parkingInfo && (
             <p><strong>{t('parking')}:</strong> {event.parkingInfo}</p>
