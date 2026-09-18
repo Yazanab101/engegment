@@ -27,12 +27,12 @@ export function EventSettingsPage() {
           celebrationNoteEn: String(event.celebrationNoteEn ?? 'A celebration\nis on its way'),
           celebrationNoteAr: String(event.celebrationNoteAr ?? 'احتفال\nفي الطريق'),
           celebrationNoteHe: String(event.celebrationNoteHe ?? 'חגיגה\nבדרך'),
-          joinUsMessageEn: String(event.joinUsMessageEn ?? "We hope you'll join us"),
-          joinUsMessageAr: String(event.joinUsMessageAr ?? 'نأمل أن تشاركونا'),
-          joinUsMessageHe: String(event.joinUsMessageHe ?? 'נשמח שתצטרפו אלינו'),
-          inviteLeadEn: String(event.inviteLeadEn ?? ''),
-          inviteLeadAr: String(event.inviteLeadAr ?? ''),
-          inviteLeadHe: String(event.inviteLeadHe ?? ''),
+          joinUsMessageEn: String(event.joinUsMessageEn ?? 'We are delighted to invite you to celebrate our engagement — your presence completes our joy'),
+          joinUsMessageAr: String(event.joinUsMessageAr ?? 'يسعدنا أن تشاركونا فرحة خطوبتنا، فبحضوركم تكتمل فرحتنا'),
+          joinUsMessageHe: String(event.joinUsMessageHe ?? 'נשמח להזמינכם לחגוג את אירוסינו, בנוכחותכם שמחתנו שלמה'),
+          inviteLeadEn: String(event.inviteLeadEn ?? 'We are delighted to invite you to celebrate our engagement — your presence completes our joy'),
+          inviteLeadAr: String(event.inviteLeadAr ?? 'يسعدنا أن تشاركونا فرحة خطوبتنا، فبحضوركم تكتمل فرحتنا'),
+          inviteLeadHe: String(event.inviteLeadHe ?? 'נשמח להזמינכם לחגוג את אירוסינו, בנוכחותכם שמחתנו שלמה'),
         })
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed'))

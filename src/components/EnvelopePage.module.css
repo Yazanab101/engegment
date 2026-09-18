@@ -31,14 +31,14 @@
 
 .inviteLead {
   margin: 0;
-  max-width: min(92vw, 34rem);
+  max-width: min(94vw, 38rem);
   font-family: var(--font-luxury-serif);
-  font-size: clamp(0.95rem, 3vw, 1.15rem);
+  font-size: clamp(1.1rem, 3.6vw, 1.35rem);
   font-weight: 400;
   font-style: italic;
   letter-spacing: 0.04em;
   color: var(--ink-warm);
-  line-height: 1.45;
+  line-height: 1.55;
   text-align: center;
 }
 
@@ -46,8 +46,9 @@
   font-family: 'Aref Ruqaa', serif;
   font-style: normal;
   font-weight: 400;
+  font-size: clamp(1.25rem, 4.2vw, 1.6rem);
   letter-spacing: 0;
-  line-height: 1.45;
+  line-height: 1.6;
 }
 
 .names {
@@ -76,12 +77,23 @@
 .subtitle {
   margin: clamp(0.15rem, 0.5vh, 0.35rem) 0 0;
   font-family: var(--font-luxury-serif);
-  font-size: clamp(0.95rem, 3vw, 1.15rem);
+  font-size: clamp(1.1rem, 3.6vw, 1.35rem);
   font-weight: 400;
   font-style: italic;
   letter-spacing: 0.06em;
   color: var(--ink-warm);
-  line-height: 1.45;
+  line-height: 1.55;
+  max-width: min(94vw, 38rem);
+  text-align: center;
+}
+
+.subtitleArabic {
+  font-family: 'Aref Ruqaa', serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: clamp(1.25rem, 4.2vw, 1.6rem);
+  letter-spacing: 0;
+  line-height: 1.6;
 }
 
 .hitArea {
