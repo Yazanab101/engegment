@@ -30,6 +30,9 @@ export function EventSettingsPage() {
           joinUsMessageEn: String(event.joinUsMessageEn ?? "We hope you'll join us"),
           joinUsMessageAr: String(event.joinUsMessageAr ?? 'نأمل أن تشاركونا'),
           joinUsMessageHe: String(event.joinUsMessageHe ?? 'נשמח שתצטרפו אלינו'),
+          inviteLeadEn: String(event.inviteLeadEn ?? ''),
+          inviteLeadAr: String(event.inviteLeadAr ?? ''),
+          inviteLeadHe: String(event.inviteLeadHe ?? ''),
         })
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed'))
@@ -105,6 +108,9 @@ export function EventSettingsPage() {
         joinUsMessageEn: current.joinUsMessageEn ? String(current.joinUsMessageEn) : null,
         joinUsMessageAr: current.joinUsMessageAr ? String(current.joinUsMessageAr) : null,
         joinUsMessageHe: current.joinUsMessageHe ? String(current.joinUsMessageHe) : null,
+        inviteLeadEn: current.inviteLeadEn ? String(current.inviteLeadEn) : null,
+        inviteLeadAr: current.inviteLeadAr ? String(current.inviteLeadAr) : null,
+        inviteLeadHe: current.inviteLeadHe ? String(current.inviteLeadHe) : null,
         celebrationNoteEn: current.celebrationNoteEn ? String(current.celebrationNoteEn) : null,
         celebrationNoteAr: current.celebrationNoteAr ? String(current.celebrationNoteAr) : null,
         celebrationNoteHe: current.celebrationNoteHe ? String(current.celebrationNoteHe) : null,
@@ -275,6 +281,39 @@ export function EventSettingsPage() {
         <div className="admin-field">
           <label>Tagline HE</label>
           <textarea rows={2} dir="rtl" value={String(form.taglineHe ?? '')} onChange={(e) => setField('taglineHe', e.target.value)} />
+        </div>
+
+        <h3>Invite line under guest name</h3>
+        <p style={{ color: 'var(--admin-muted)', fontSize: '0.9rem' }}>
+          Example: We are honored to invite you… / نتشرف بدعوتكم إلى…
+        </p>
+        <div className="admin-grid-2">
+          <div className="admin-field">
+            <label>Invite line EN</label>
+            <input
+              value={String(form.inviteLeadEn ?? '')}
+              onChange={(e) => setField('inviteLeadEn', e.target.value)}
+              placeholder="We are honored to invite you"
+            />
+          </div>
+          <div className="admin-field">
+            <label>Invite line AR</label>
+            <input
+              dir="rtl"
+              value={String(form.inviteLeadAr ?? '')}
+              onChange={(e) => setField('inviteLeadAr', e.target.value)}
+              placeholder="نتشرف بدعوتكم إلى"
+            />
+          </div>
+        </div>
+        <div className="admin-field">
+          <label>Invite line HE</label>
+          <input
+            dir="rtl"
+            value={String(form.inviteLeadHe ?? '')}
+            onChange={(e) => setField('inviteLeadHe', e.target.value)}
+            placeholder="נכבד להזמינכם ל"
+          />
         </div>
 
         <h3>Join us message (under the date)</h3>

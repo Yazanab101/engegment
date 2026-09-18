@@ -21,6 +21,7 @@ export type InvitationContent = {
   address: string
   tagline: string
   celebrationNote: string
+  inviteLead: string | null
   ticketLines: [string, string, string]
   imageCoupleColor: string
   imageCoupleBw: string
@@ -92,6 +93,7 @@ function buildContent(
       address: fallbackInvitation.address,
       tagline: fallbackInvitation.tagline,
       celebrationNote: fallbackInvitation.celebrationNote,
+      inviteLead: null,
       ticketLines: DEFAULT_TICKET_LINES,
       imageCoupleColor: defaultAssets.couplePhotoTicketBg,
       imageCoupleBw: defaultAssets.couplePhotoBw,
@@ -115,6 +117,7 @@ function buildContent(
     address: event.venueAddress,
     tagline: event.tagline ?? fallbackInvitation.tagline,
     celebrationNote: event.celebrationNote ?? fallbackInvitation.celebrationNote,
+    inviteLead: event.inviteLead?.trim() ? event.inviteLead.trim() : null,
     ticketLines: parseTicketLines(event.ticketHeading),
     imageCoupleColor: event.imageCoupleColor || defaultAssets.couplePhotoTicketBg,
     imageCoupleBw: event.imageCoupleBw || defaultAssets.couplePhotoBw,

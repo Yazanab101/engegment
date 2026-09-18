@@ -244,6 +244,14 @@ export function InvitationHero({ onClose, disabled }: InvitationHeroProps) {
             {content.guestName && (
               <p className={styles.belowEnvelopeGuest}>{content.guestName}</p>
             )}
+            {content.inviteLead && (
+              <p
+                className={`${styles.belowEnvelopeLead} ${content.language === 'AR' ? styles.belowEnvelopeLeadArabic : ''}`}
+                dir={content.language === 'AR' || content.language === 'HE' ? 'rtl' : 'ltr'}
+              >
+                {content.inviteLead}
+              </p>
+            )}
             <p className={styles.belowEnvelopeNames}>
               {content.groom}{' '}
               <span className={styles.belowEnvelopeAmp}>&amp;</span>{' '}

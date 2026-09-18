@@ -372,6 +372,26 @@
   line-height: 1.35;
 }
 
+.belowEnvelopeLead {
+  margin: 0;
+  max-width: 92%;
+  font-family: var(--font-luxury-serif, Georgia, serif);
+  font-size: clamp(0.9rem, 3cqw, 1.05rem);
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: 0.03em;
+  color: rgba(41, 18, 11, 0.82);
+  line-height: 1.45;
+  text-align: center;
+}
+
+.belowEnvelopeLeadArabic {
+  font-family: 'Aref Ruqaa', serif;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
 .belowEnvelopeAmp {
   font-family: 'Parfumerie Script', cursive;
   font-size: clamp(1.25rem, 5cqw, 1.85rem);

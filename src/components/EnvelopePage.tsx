@@ -66,6 +66,16 @@ export function EnvelopePage({ onOpen, disabled, exiting, skipIntro }: EnvelopeP
           </motion.p>
         )}
 
+        {content.inviteLead && (
+          <motion.p
+            className={`${styles.inviteLead} ${locale === 'AR' ? styles.inviteLeadArabic : ''}`}
+            dir={locale === 'AR' || locale === 'HE' ? 'rtl' : 'ltr'}
+            {...fadeUp(0.25, 0.85)}
+          >
+            {content.inviteLead}
+          </motion.p>
+        )}
+
         <motion.h1 className={styles.names} {...fadeUp(INTRO.names.delay, INTRO.names.duration)}>
           {content.groom.toUpperCase()} &amp; {content.bride.toUpperCase()}
         </motion.h1>

@@ -34,6 +34,7 @@ export type PublicEvent = {
   footer: string | null
   tagline: string | null
   joinUsMessage: string | null
+  inviteLead: string | null
   celebrationNote: string | null
   ticketHeading: string | null
   imageCoupleColor: string | null

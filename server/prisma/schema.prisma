@@ -97,6 +97,9 @@ model Event {
   joinUsMessageEn       String?
   joinUsMessageAr       String?
   joinUsMessageHe       String?
+  inviteLeadEn          String?
+  inviteLeadAr          String?
+  inviteLeadHe          String?
   celebrationNoteEn     String?
   celebrationNoteAr     String?
   celebrationNoteHe     String?
