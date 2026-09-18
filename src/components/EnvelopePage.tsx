@@ -60,12 +60,6 @@ export function EnvelopePage({ onOpen, disabled, exiting, skipIntro }: EnvelopeP
       transition={{ duration: 0.55, ease: luxuryEase }}
     >
       <header className={styles.introHeader}>
-        {content.dearLine && (
-          <motion.p className={styles.subtitle} {...fadeUp(0, 0.8)}>
-            {content.dearLine}
-          </motion.p>
-        )}
-
         <motion.h1 className={styles.names} {...fadeUp(INTRO.names.delay, INTRO.names.duration)}>
           {content.groom.toUpperCase()} &amp; {content.bride.toUpperCase()}
         </motion.h1>

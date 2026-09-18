@@ -104,25 +104,43 @@
 .stepper {
   display: inline-flex;
   align-items: center;
-  gap: 1rem;
-  margin: 0.75rem 0;
+  justify-content: center;
+  gap: 1.1rem;
+  margin: 0.9rem 0;
+  direction: ltr;
 }
 
 .stepper button {
-  width: 2.4rem;
-  height: 2.4rem;
+  width: 2.75rem;
+  height: 2.75rem;
   border-radius: 50%;
-  border: 1px solid rgba(41, 18, 11, 0.2);
+  border: 1.5px solid rgba(41, 18, 11, 0.35);
   background: #fff;
-  font-size: 1.2rem;
+  color: rgb(41, 18, 11);
+  font-size: 1.55rem;
+  font-weight: 600;
+  line-height: 1;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(41, 18, 11, 0.08);
 }
 
-.stepper span {
-  min-width: 1.5rem;
+.stepper button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.stepperValue {
+  min-width: 2.4rem;
   text-align: center;
-  font-size: 1.35rem;
+  font-size: 1.85rem;
+  font-weight: 600;
   font-family: var(--font-luxury-serif);
+  color: rgb(41, 18, 11);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .messageLabel {

@@ -220,17 +220,19 @@ export function InvitationExtras() {
             {phase === 'count' && (
               <div className={styles.countBox}>
                 <p>{t('howMany')}</p>
-                <div className={styles.stepper}>
+                <div className={styles.stepper} dir="ltr">
                   <button
                     type="button"
+                    aria-label="Decrease"
                     onClick={() => setCount((c) => Math.max(1, c - 1))}
                     disabled={count <= 1}
                   >
                     −
                   </button>
-                  <span>{count}</span>
+                  <span className={styles.stepperValue}>{count}</span>
                   <button
                     type="button"
+                    aria-label="Increase"
                     onClick={() => setCount((c) => Math.min(max, c + 1))}
                     disabled={count >= max}
                   >
