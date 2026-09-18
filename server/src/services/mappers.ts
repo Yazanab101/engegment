@@ -98,7 +98,7 @@ export function toPublicEvent(event: Event, language: Language): PublicEvent {
     rsvpDeadline: event.rsvpDeadline?.toISOString() ?? null,
     contactPhone: event.contactPhone,
     whatsappPhone: event.whatsappPhone,
-    dressCode: pickLocalized(language, event.dressCode, event.dressCodeAr, event.dressCodeHe),
+    dressCode: null,
     parkingInfo: pickLocalized(language, event.parkingInfo, event.parkingInfoAr, event.parkingInfoHe),
     additionalInfo: pickLocalized(
       language,
