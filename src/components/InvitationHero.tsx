@@ -258,7 +258,6 @@ export function InvitationHero({ onClose, disabled }: InvitationHeroProps) {
               {content.bride}
             </p>
             <p className={styles.belowEnvelopeDate}>{content.dateShort}</p>
-            <p className={styles.belowEnvelopeJoin}>{content.joinUsMessage}</p>
           </motion.footer>
 
           <InvitationExtras />

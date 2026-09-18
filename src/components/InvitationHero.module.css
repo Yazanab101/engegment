@@ -373,15 +373,15 @@
 }
 
 .belowEnvelopeLead {
-  margin: 0;
-  max-width: 92%;
+  margin: 0.2rem 0 0.35rem;
+  max-width: 96%;
   font-family: var(--font-luxury-serif, Georgia, serif);
-  font-size: clamp(0.9rem, 3cqw, 1.05rem);
+  font-size: clamp(1.15rem, 4.2cqw, 1.45rem);
   font-weight: 400;
   font-style: italic;
   letter-spacing: 0.03em;
-  color: rgba(41, 18, 11, 0.82);
-  line-height: 1.45;
+  color: #29120b;
+  line-height: 1.55;
   text-align: center;
 }
 
@@ -389,7 +389,9 @@
   font-family: 'Aref Ruqaa', serif;
   font-style: normal;
   font-weight: 400;
+  font-size: clamp(1.3rem, 5cqw, 1.7rem);
   letter-spacing: 0;
+  line-height: 1.6;
 }
 
 .belowEnvelopeAmp {

@@ -66,16 +66,6 @@ export function EnvelopePage({ onOpen, disabled, exiting, skipIntro }: EnvelopeP
           </motion.p>
         )}
 
-        {content.inviteLead && (
-          <motion.p
-            className={`${styles.inviteLead} ${locale === 'AR' ? styles.inviteLeadArabic : ''}`}
-            dir={locale === 'AR' || locale === 'HE' ? 'rtl' : 'ltr'}
-            {...fadeUp(0.25, 0.85)}
-          >
-            {content.inviteLead}
-          </motion.p>
-        )}
-
         <motion.h1 className={styles.names} {...fadeUp(INTRO.names.delay, INTRO.names.duration)}>
           {content.groom.toUpperCase()} &amp; {content.bride.toUpperCase()}
         </motion.h1>
@@ -84,12 +74,15 @@ export function EnvelopePage({ onOpen, disabled, exiting, skipIntro }: EnvelopeP
           {content.saveTheDate}
         </motion.p>
 
-        <motion.p
-          className={styles.subtitle}
-          {...fadeUp(INTRO.subtitle.delay, INTRO.subtitle.duration)}
-        >
-          {content.joinUsMessage}
-        </motion.p>
+        {(content.inviteLead || content.joinUsMessage) && (
+          <motion.p
+            className={`${styles.subtitle} ${locale === 'AR' ? styles.subtitleArabic : ''}`}
+            dir={locale === 'AR' || locale === 'HE' ? 'rtl' : 'ltr'}
+            {...fadeUp(INTRO.subtitle.delay, INTRO.subtitle.duration)}
+          >
+            {content.inviteLead || content.joinUsMessage}
+          </motion.p>
+        )}
       </header>
 
       <button
