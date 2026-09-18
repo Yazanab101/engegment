@@ -30,12 +30,13 @@ export function GuestsPage() {
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<(typeof filters)[number]['value']>('all')
   const [selected, setSelected] = useState<string[]>([])
-  const [modal, setModal] = useState<'create' | 'edit' | 'import' | 'qr' | null>(null)
+  const [modal, setModal] = useState<'create' | 'edit' | 'import' | 'qr' | 'message' | null>(null)
   const [editing, setEditing] = useState<AdminGuest | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [csvText, setCsvText] = useState('name,phone,email,language,maxGuestsAllowed,notes\n')
   const [importResult, setImportResult] = useState<string | null>(null)
   const [qrGuest, setQrGuest] = useState<AdminGuest | null>(null)
+  const [messageGuest, setMessageGuest] = useState<AdminGuest | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
@@ -189,7 +190,20 @@ export function GuestsPage() {
                 </td>
                 <td>
                   <strong>{g.fullName}</strong>
-                  {g.message && <div style={{ color: 'var(--admin-muted)', fontSize: '0.85rem' }}>{g.message}</div>}
+                  {g.message?.trim() ? (
+                    <div style={{ marginTop: '0.35rem' }}>
+                      <button
+                        type="button"
+                        className="admin-msg-btn"
+                        onClick={() => {
+                          setMessageGuest(g)
+                          setModal('message')
+                        }}
+                      >
+                        ✉️ Message
+                      </button>
+                    </div>
+                  ) : null}
                 </td>
                 <td>{g.language}</td>
                 <td>{g.isActive ? 'Active' : 'Disabled'}</td>
@@ -424,6 +438,23 @@ export function GuestsPage() {
               </a>
               <button type="button" onClick={() => window.print()}>Print</button>
               <button type="button" onClick={() => setModal(null)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modal === 'message' && messageGuest && (
+        <div className="admin-modal-backdrop" onClick={() => setModal(null)}>
+          <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+            <p className="admin-msg-from">From: {messageGuest.fullName}</p>
+            <h2 style={{ marginTop: '0.25rem' }}>Guest message</h2>
+            <div className="admin-msg-body" dir="auto">
+              {messageGuest.message}
+            </div>
+            <div className="admin-actions" style={{ marginTop: '1rem' }}>
+              <button className="admin-btn secondary" type="button" onClick={() => setModal(null)}>
+                Close
+              </button>
             </div>
           </div>
         </div>

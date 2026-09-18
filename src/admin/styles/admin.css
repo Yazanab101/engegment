@@ -236,6 +236,35 @@
   text-decoration: none;
 }
 
+.admin-msg-btn {
+  font: inherit;
+  font-size: 0.82rem;
+  border-radius: 999px;
+  border: 1px solid rgba(107, 63, 42, 0.28);
+  background: rgba(107, 63, 42, 0.08);
+  color: var(--admin-accent);
+  padding: 0.28rem 0.7rem;
+  cursor: pointer;
+}
+
+.admin-msg-from {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--admin-muted);
+}
+
+.admin-msg-body {
+  margin-top: 0.85rem;
+  padding: 1rem;
+  border-radius: 12px;
+  background: rgba(36, 20, 14, 0.04);
+  border: 1px solid var(--admin-line);
+  white-space: pre-wrap;
+  line-height: 1.55;
+  font-size: 1.05rem;
+  color: var(--admin-ink);
+}
+
 .admin-modal-backdrop {
   position: fixed;
   inset: 0;
