@@ -98,7 +98,7 @@ export function InvitationHero({ onClose, disabled }: InvitationHeroProps) {
                 >
                   <motion.img
                     className={styles.couplePhoto}
-                    src={assets.couplePhotoTicketBg}
+                    src={content.imageCoupleColor}
                     alt=""
                     aria-hidden
                     draggable={false}
@@ -117,7 +117,7 @@ export function InvitationHero({ onClose, disabled }: InvitationHeroProps) {
                 >
                   <motion.img
                     className={styles.couplePhotoBw}
-                    src={assets.couplePhotoBw}
+                    src={content.imageCoupleBw}
                     alt=""
                     aria-hidden
                     draggable={false}
@@ -174,9 +174,9 @@ export function InvitationHero({ onClose, disabled }: InvitationHeroProps) {
                   transition={revealSpring(REVEAL.ticket)}
                 >
                   <div className={styles.ticketText}>
-                    <span className={styles.saveWord}>Save</span>
-                    <span className={styles.theWord}>the</span>
-                    <span className={styles.dateWord}>Date</span>
+                    <span className={styles.saveWord}>{content.ticketLines[0]}</span>
+                    <span className={styles.theWord}>{content.ticketLines[1]}</span>
+                    <span className={styles.dateWord}>{content.ticketLines[2]}</span>
                     <span className={styles.saveDateNum}>{content.saveTheDate}</span>
                   </div>
                 </motion.div>

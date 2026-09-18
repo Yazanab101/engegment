@@ -8,6 +8,7 @@ import { errorHandler } from './lib/errors.js'
 import { invitationsRouter } from './routes/invitations.js'
 import { authRouter } from './routes/auth.js'
 import { adminRouter } from './routes/admin.js'
+import { uploadsDir, uploadsRouter } from './routes/uploads.js'
 
 export function createApp() {
   const app = express()
@@ -22,6 +23,7 @@ export function createApp() {
   )
   app.use(express.json({ limit: '1mb' }))
   app.use(cookieParser())
+  app.use('/uploads', express.static(uploadsDir, { maxAge: '7d' }))
 
   const publicLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -50,6 +52,7 @@ export function createApp() {
 
   app.use('/api/admin/auth/login', authLimiter)
   app.use('/api/admin/auth', authRouter)
+  app.use('/api/admin/uploads', uploadsRouter)
   app.use('/api/admin', adminRouter)
   app.use('/api/invitations/:token/rsvp', rsvpLimiter)
   app.use('/api/invitations', publicLimiter, invitationsRouter)

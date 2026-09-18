@@ -35,6 +35,9 @@ export type PublicEvent = {
   tagline: string | null
   joinUsMessage: string | null
   celebrationNote: string | null
+  ticketHeading: string | null
+  imageCoupleColor: string | null
+  imageCoupleBw: string | null
   rsvpClosed: boolean
 }
 
@@ -99,6 +102,14 @@ export function toPublicEvent(event: Event, language: Language): PublicEvent {
       event.celebrationNoteAr,
       event.celebrationNoteHe,
     ),
+    ticketHeading: pickLocalized(
+      language,
+      event.ticketHeadingEn,
+      event.ticketHeadingAr,
+      event.ticketHeadingHe,
+    ),
+    imageCoupleColor: event.imageCoupleColor,
+    imageCoupleBw: event.imageCoupleBw,
     rsvpClosed,
   }
 }

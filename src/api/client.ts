@@ -35,6 +35,9 @@ export type PublicEvent = {
   tagline: string | null
   joinUsMessage: string | null
   celebrationNote: string | null
+  ticketHeading: string | null
+  imageCoupleColor: string | null
+  imageCoupleBw: string | null
   rsvpClosed: boolean
 }
 
@@ -127,6 +130,21 @@ export const api = {
     request('/api/admin/events/current', { method: 'PATCH', body: JSON.stringify(body) }),
   setGuestRsvp: (id: string, body: unknown) =>
     request(`/api/admin/guests/${id}/rsvp`, { method: 'POST', body: JSON.stringify(body) }),
+  uploadImage: async (file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? ''
+    const res = await fetch(`${API_BASE}/api/admin/uploads`, {
+      method: 'POST',
+      credentials: 'include',
+      body: form,
+    })
+    if (!res.ok) {
+      const data = (await res.json().catch(() => ({}))) as { error?: string }
+      throw new Error(data.error ?? 'Upload failed')
+    }
+    return (await res.json()) as { url: string }
+  },
 }
 
 export type AdminGuest = {

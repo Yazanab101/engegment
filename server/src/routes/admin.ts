@@ -260,6 +260,11 @@ adminRouter.patch(
         celebrationNoteEn: z.string().optional().nullable(),
         celebrationNoteAr: z.string().optional().nullable(),
         celebrationNoteHe: z.string().optional().nullable(),
+        ticketHeadingEn: z.string().optional().nullable(),
+        ticketHeadingAr: z.string().optional().nullable(),
+        ticketHeadingHe: z.string().optional().nullable(),
+        imageCoupleColor: z.string().optional().nullable(),
+        imageCoupleBw: z.string().optional().nullable(),
       })
       .parse(req.body)
 

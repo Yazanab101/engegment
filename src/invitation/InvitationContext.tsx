@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from 'react'
 import type { InvitationPayload, Language, PublicEvent, PublicGuest } from '../api/client'
-import { invitation as fallbackInvitation } from '../data/invitation'
+import { assets as defaultAssets, invitation as fallbackInvitation } from '../data/invitation'
 import { isRtl, translate, type LocaleCode, type TranslationKey } from './i18n'
 
 export type InvitationContent = {
@@ -21,6 +21,9 @@ export type InvitationContent = {
   address: string
   tagline: string
   celebrationNote: string
+  ticketLines: [string, string, string]
+  imageCoupleColor: string
+  imageCoupleBw: string
   joinUsMessage: string
   returnToEnvelope: string
   message: string
@@ -44,6 +47,8 @@ type InvitationContextValue = {
 
 const InvitationContext = createContext<InvitationContextValue | null>(null)
 
+const DEFAULT_TICKET_LINES: [string, string, string] = ['Save', 'the', 'Date']
+
 function formatDateShort(iso: string): string {
   const d = new Date(iso)
   const dd = String(d.getUTCDate()).padStart(2, '0')
@@ -61,6 +66,12 @@ function formatLongDate(iso: string, language: Language): string {
     day: 'numeric',
     timeZone: 'UTC',
   })
+}
+
+function parseTicketLines(value: string | null | undefined): [string, string, string] {
+  if (!value?.trim()) return DEFAULT_TICKET_LINES
+  const parts = value.split('\n').map((p) => p.trim()).filter(Boolean)
+  return [parts[0] ?? DEFAULT_TICKET_LINES[0], parts[1] ?? '', parts[2] ?? '']
 }
 
 function buildContent(
@@ -81,6 +92,9 @@ function buildContent(
       address: fallbackInvitation.address,
       tagline: fallbackInvitation.tagline,
       celebrationNote: fallbackInvitation.celebrationNote,
+      ticketLines: DEFAULT_TICKET_LINES,
+      imageCoupleColor: defaultAssets.couplePhotoTicketBg,
+      imageCoupleBw: defaultAssets.couplePhotoBw,
       joinUsMessage: t('joinUsMessage'),
       returnToEnvelope: t('returnToEnvelope'),
       message: fallbackInvitation.message,
@@ -101,6 +115,9 @@ function buildContent(
     address: event.venueAddress,
     tagline: event.tagline ?? fallbackInvitation.tagline,
     celebrationNote: event.celebrationNote ?? fallbackInvitation.celebrationNote,
+    ticketLines: parseTicketLines(event.ticketHeading),
+    imageCoupleColor: event.imageCoupleColor || defaultAssets.couplePhotoTicketBg,
+    imageCoupleBw: event.imageCoupleBw || defaultAssets.couplePhotoBw,
     joinUsMessage: event.joinUsMessage ?? t('joinUsMessage'),
     returnToEnvelope: t('returnToEnvelope'),
     message: event.intro ?? fallbackInvitation.message,

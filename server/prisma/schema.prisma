@@ -88,6 +88,11 @@ model Event {
   celebrationNoteEn     String?
   celebrationNoteAr     String?
   celebrationNoteHe     String?
+  ticketHeadingEn       String?
+  ticketHeadingAr       String?
+  ticketHeadingHe       String?
+  imageCoupleColor      String?
+  imageCoupleBw         String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
   guests                Guest[]
