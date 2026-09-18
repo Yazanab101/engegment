@@ -27,6 +27,9 @@ export function EventSettingsPage() {
           celebrationNoteEn: String(event.celebrationNoteEn ?? 'A celebration\nis on its way'),
           celebrationNoteAr: String(event.celebrationNoteAr ?? 'احتفال\nفي الطريق'),
           celebrationNoteHe: String(event.celebrationNoteHe ?? 'חגיגה\nבדרך'),
+          joinUsMessageEn: String(event.joinUsMessageEn ?? "We hope you'll join us"),
+          joinUsMessageAr: String(event.joinUsMessageAr ?? 'نأمل أن تشاركونا'),
+          joinUsMessageHe: String(event.joinUsMessageHe ?? 'נשמח שתצטרפו אלינו'),
         })
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed'))
@@ -61,19 +64,31 @@ export function EventSettingsPage() {
     try {
       const payload = {
         title: String(current.title ?? ''),
+        titleAr: current.titleAr ? String(current.titleAr) : null,
+        titleHe: current.titleHe ? String(current.titleHe) : null,
         brideName: String(current.brideName ?? ''),
         groomName: String(current.groomName ?? ''),
         eventDate: new Date(String(current.eventDate)).toISOString(),
         eventStartTime: String(current.eventStartTime ?? ''),
         venueName: String(current.venueName ?? ''),
+        venueNameAr: current.venueNameAr ? String(current.venueNameAr) : null,
+        venueNameHe: current.venueNameHe ? String(current.venueNameHe) : null,
         venueAddress: String(current.venueAddress ?? ''),
+        venueAddressAr: current.venueAddressAr ? String(current.venueAddressAr) : null,
+        venueAddressHe: current.venueAddressHe ? String(current.venueAddressHe) : null,
         googleMapsUrl: current.googleMapsUrl ? String(current.googleMapsUrl) : null,
         wazeUrl: current.wazeUrl ? String(current.wazeUrl) : null,
         contactPhone: current.contactPhone ? String(current.contactPhone) : null,
         whatsappPhone: current.whatsappPhone ? String(current.whatsappPhone) : null,
         dressCode: current.dressCode ? String(current.dressCode) : null,
+        dressCodeAr: current.dressCodeAr ? String(current.dressCodeAr) : null,
+        dressCodeHe: current.dressCodeHe ? String(current.dressCodeHe) : null,
         parkingInfo: current.parkingInfo ? String(current.parkingInfo) : null,
+        parkingInfoAr: current.parkingInfoAr ? String(current.parkingInfoAr) : null,
+        parkingInfoHe: current.parkingInfoHe ? String(current.parkingInfoHe) : null,
         additionalInfo: current.additionalInfo ? String(current.additionalInfo) : null,
+        additionalInfoAr: current.additionalInfoAr ? String(current.additionalInfoAr) : null,
+        additionalInfoHe: current.additionalInfoHe ? String(current.additionalInfoHe) : null,
         showTableAssignments: Boolean(current.showTableAssignments),
         rsvpDeadline: current.rsvpDeadline
           ? new Date(String(current.rsvpDeadline)).toISOString()
@@ -262,19 +277,82 @@ export function EventSettingsPage() {
           <textarea rows={2} dir="rtl" value={String(form.taglineHe ?? '')} onChange={(e) => setField('taglineHe', e.target.value)} />
         </div>
 
+        <h3>Join us message (under the date)</h3>
+        <div className="admin-grid-2">
+          <div className="admin-field">
+            <label>Join us EN</label>
+            <input
+              value={String(form.joinUsMessageEn ?? '')}
+              onChange={(e) => setField('joinUsMessageEn', e.target.value)}
+              placeholder="We hope you'll join us"
+            />
+          </div>
+          <div className="admin-field">
+            <label>Join us AR</label>
+            <input
+              dir="rtl"
+              value={String(form.joinUsMessageAr ?? '')}
+              onChange={(e) => setField('joinUsMessageAr', e.target.value)}
+              placeholder="نأمل أن تشاركونا"
+            />
+          </div>
+        </div>
+        <div className="admin-field">
+          <label>Join us HE</label>
+          <input
+            dir="rtl"
+            value={String(form.joinUsMessageHe ?? '')}
+            onChange={(e) => setField('joinUsMessageHe', e.target.value)}
+            placeholder="נשמח שתצטרפו אלינו"
+          />
+        </div>
+
         <h3>Event details</h3>
-        <div className="admin-field">
-          <label>Event title</label>
-          <input value={String(form.title ?? '')} onChange={(e) => setField('title', e.target.value)} />
+        <div className="admin-grid-2">
+          <div className="admin-field">
+            <label>Event title EN</label>
+            <input value={String(form.title ?? '')} onChange={(e) => setField('title', e.target.value)} />
+          </div>
+          <div className="admin-field">
+            <label>Event title AR</label>
+            <input dir="rtl" value={String(form.titleAr ?? '')} onChange={(e) => setField('titleAr', e.target.value)} />
+          </div>
         </div>
         <div className="admin-field">
-          <label>Venue name</label>
-          <input value={String(form.venueName ?? '')} onChange={(e) => setField('venueName', e.target.value)} />
+          <label>Event title HE</label>
+          <input dir="rtl" value={String(form.titleHe ?? '')} onChange={(e) => setField('titleHe', e.target.value)} />
+        </div>
+
+        <div className="admin-grid-2">
+          <div className="admin-field">
+            <label>Venue name EN</label>
+            <input value={String(form.venueName ?? '')} onChange={(e) => setField('venueName', e.target.value)} />
+          </div>
+          <div className="admin-field">
+            <label>Venue name AR</label>
+            <input dir="rtl" value={String(form.venueNameAr ?? '')} onChange={(e) => setField('venueNameAr', e.target.value)} />
+          </div>
         </div>
         <div className="admin-field">
-          <label>Venue address</label>
-          <input value={String(form.venueAddress ?? '')} onChange={(e) => setField('venueAddress', e.target.value)} />
+          <label>Venue name HE</label>
+          <input dir="rtl" value={String(form.venueNameHe ?? '')} onChange={(e) => setField('venueNameHe', e.target.value)} />
         </div>
+
+        <div className="admin-grid-2">
+          <div className="admin-field">
+            <label>Venue address EN</label>
+            <input value={String(form.venueAddress ?? '')} onChange={(e) => setField('venueAddress', e.target.value)} />
+          </div>
+          <div className="admin-field">
+            <label>Venue address AR</label>
+            <input dir="rtl" value={String(form.venueAddressAr ?? '')} onChange={(e) => setField('venueAddressAr', e.target.value)} />
+          </div>
+        </div>
+        <div className="admin-field">
+          <label>Venue address HE</label>
+          <input dir="rtl" value={String(form.venueAddressHe ?? '')} onChange={(e) => setField('venueAddressHe', e.target.value)} />
+        </div>
+
         <div className="admin-grid-2">
           <div className="admin-field">
             <label>Google Maps URL</label>
@@ -303,13 +381,50 @@ export function EventSettingsPage() {
             <input value={String(form.whatsappPhone ?? '')} onChange={(e) => setField('whatsappPhone', e.target.value)} />
           </div>
         </div>
-        <div className="admin-field">
-          <label>Dress code</label>
-          <input value={String(form.dressCode ?? '')} onChange={(e) => setField('dressCode', e.target.value)} />
+
+        <div className="admin-grid-2">
+          <div className="admin-field">
+            <label>Dress code EN</label>
+            <input value={String(form.dressCode ?? '')} onChange={(e) => setField('dressCode', e.target.value)} />
+          </div>
+          <div className="admin-field">
+            <label>Dress code AR</label>
+            <input dir="rtl" value={String(form.dressCodeAr ?? '')} onChange={(e) => setField('dressCodeAr', e.target.value)} />
+          </div>
         </div>
         <div className="admin-field">
-          <label>Parking info</label>
-          <textarea rows={2} value={String(form.parkingInfo ?? '')} onChange={(e) => setField('parkingInfo', e.target.value)} />
+          <label>Dress code HE</label>
+          <input dir="rtl" value={String(form.dressCodeHe ?? '')} onChange={(e) => setField('dressCodeHe', e.target.value)} />
+        </div>
+
+        <div className="admin-grid-2">
+          <div className="admin-field">
+            <label>Parking info EN</label>
+            <textarea rows={2} value={String(form.parkingInfo ?? '')} onChange={(e) => setField('parkingInfo', e.target.value)} />
+          </div>
+          <div className="admin-field">
+            <label>Parking info AR</label>
+            <textarea rows={2} dir="rtl" value={String(form.parkingInfoAr ?? '')} onChange={(e) => setField('parkingInfoAr', e.target.value)} />
+          </div>
+        </div>
+        <div className="admin-field">
+          <label>Parking info HE</label>
+          <textarea rows={2} dir="rtl" value={String(form.parkingInfoHe ?? '')} onChange={(e) => setField('parkingInfoHe', e.target.value)} />
+        </div>
+
+        <div className="admin-grid-2">
+          <div className="admin-field">
+            <label>Additional info EN</label>
+            <textarea rows={2} value={String(form.additionalInfo ?? '')} onChange={(e) => setField('additionalInfo', e.target.value)} />
+          </div>
+          <div className="admin-field">
+            <label>Additional info AR</label>
+            <textarea rows={2} dir="rtl" value={String(form.additionalInfoAr ?? '')} onChange={(e) => setField('additionalInfoAr', e.target.value)} />
+          </div>
+        </div>
+        <div className="admin-field">
+          <label>Additional info HE</label>
+          <textarea rows={2} dir="rtl" value={String(form.additionalInfoHe ?? '')} onChange={(e) => setField('additionalInfoHe', e.target.value)} />
         </div>
 
         <div className="admin-field">

@@ -70,6 +70,7 @@ export function InvitationExtras() {
 
   return (
     <section className={styles.wrap} aria-label="Invitation details">
+      {guest?.displayName ? <p className={styles.guestBanner}>{guest.displayName}</p> : null}
       <div className={styles.langRow}>
         <label htmlFor="lang">{t('language')}</label>
         <select

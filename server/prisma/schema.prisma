@@ -56,12 +56,18 @@ model Event {
   id                    String    @id @default(cuid())
   slug                  String    @unique @default("current")
   title                 String
+  titleAr               String?
+  titleHe               String?
   brideName             String
   groomName             String
   eventDate             DateTime
   eventStartTime        String
   venueName             String
+  venueNameAr           String?
+  venueNameHe           String?
   venueAddress          String
+  venueAddressAr        String?
+  venueAddressHe        String?
   googleMapsUrl         String?
   wazeUrl               String?
   latitude              Float?
@@ -70,8 +76,14 @@ model Event {
   contactPhone          String?
   whatsappPhone         String?
   dressCode             String?
+  dressCodeAr           String?
+  dressCodeHe           String?
   parkingInfo           String?
+  parkingInfoAr         String?
+  parkingInfoHe         String?
   additionalInfo        String?
+  additionalInfoAr      String?
+  additionalInfoHe      String?
   showTableAssignments  Boolean   @default(false)
   introEn               String?
   introAr               String?

@@ -362,6 +362,16 @@
   line-height: 1.15;
 }
 
+.belowEnvelopeGuest {
+  margin: 0 0 0.15rem;
+  font-family: var(--font-luxury-serif, Georgia, serif);
+  font-size: clamp(1rem, 3.5cqw, 1.25rem);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: #29120b;
+  line-height: 1.35;
+}
+
 .belowEnvelopeAmp {
   font-family: 'Parfumerie Script', cursive;
   font-size: clamp(1.25rem, 5cqw, 1.85rem);

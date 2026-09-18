@@ -19,6 +19,16 @@
   flex-shrink: 0;
 }
 
+.guestName {
+  margin: 0;
+  font-family: var(--font-luxury-serif);
+  font-size: clamp(1.05rem, 3.6vw, 1.35rem);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--ink-warm);
+  line-height: 1.4;
+}
+
 .names {
   margin: 0;
   font-family: var(--font-luxury-serif);

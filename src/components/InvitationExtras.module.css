@@ -7,6 +7,16 @@
   gap: 1rem;
 }
 
+.guestBanner {
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-luxury-serif);
+  font-size: clamp(1.15rem, 4vw, 1.4rem);
+  font-weight: 500;
+  color: rgb(41, 18, 11);
+  letter-spacing: 0.03em;
+}
+
 .card {
   background: rgba(255, 248, 240, 0.92);
   border: 1px solid rgba(41, 18, 11, 0.08);

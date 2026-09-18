@@ -241,6 +241,9 @@ export function InvitationHero({ onClose, disabled }: InvitationHeroProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={revealTransition(REVEAL.frontFlowers + 0.35, 0.9)}
           >
+            {content.guestName && (
+              <p className={styles.belowEnvelopeGuest}>{content.guestName}</p>
+            )}
             <p className={styles.belowEnvelopeNames}>
               {content.groom}{' '}
               <span className={styles.belowEnvelopeAmp}>&amp;</span>{' '}

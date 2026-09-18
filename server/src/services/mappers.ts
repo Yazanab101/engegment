@@ -47,9 +47,18 @@ function pickLocalized(
   ar: string | null | undefined,
   he: string | null | undefined,
 ): string | null {
-  if (language === 'AR') return ar ?? en ?? null
-  if (language === 'HE') return he ?? en ?? null
-  return en ?? null
+  if (language === 'AR') return ar || en || null
+  if (language === 'HE') return he || en || null
+  return en || null
+}
+
+function pickLocalizedText(
+  language: Language,
+  en: string,
+  ar: string | null | undefined,
+  he: string | null | undefined,
+): string {
+  return pickLocalized(language, en, ar, he) || en
 }
 
 export function toPublicGuest(guest: Guest & { rsvp: Rsvp | null }, event: Event): PublicGuest {
@@ -69,13 +78,18 @@ export function toPublicEvent(event: Event, language: Language): PublicEvent {
   const rsvpClosed = deadline ? deadline.getTime() < Date.now() : false
 
   return {
-    title: event.title,
+    title: pickLocalizedText(language, event.title, event.titleAr, event.titleHe),
     brideName: event.brideName,
     groomName: event.groomName,
     eventDate: event.eventDate.toISOString(),
     eventStartTime: event.eventStartTime,
-    venueName: event.venueName,
-    venueAddress: event.venueAddress,
+    venueName: pickLocalizedText(language, event.venueName, event.venueNameAr, event.venueNameHe),
+    venueAddress: pickLocalizedText(
+      language,
+      event.venueAddress,
+      event.venueAddressAr,
+      event.venueAddressHe,
+    ),
     googleMapsUrl: event.googleMapsUrl,
     wazeUrl: event.wazeUrl,
     latitude: event.latitude,
@@ -83,9 +97,14 @@ export function toPublicEvent(event: Event, language: Language): PublicEvent {
     rsvpDeadline: event.rsvpDeadline?.toISOString() ?? null,
     contactPhone: event.contactPhone,
     whatsappPhone: event.whatsappPhone,
-    dressCode: event.dressCode,
-    parkingInfo: event.parkingInfo,
-    additionalInfo: event.additionalInfo,
+    dressCode: pickLocalized(language, event.dressCode, event.dressCodeAr, event.dressCodeHe),
+    parkingInfo: pickLocalized(language, event.parkingInfo, event.parkingInfoAr, event.parkingInfoHe),
+    additionalInfo: pickLocalized(
+      language,
+      event.additionalInfo,
+      event.additionalInfoAr,
+      event.additionalInfoHe,
+    ),
     showTableAssignments: event.showTableAssignments,
     intro: pickLocalized(language, event.introEn, event.introAr, event.introHe),
     footer: pickLocalized(language, event.footerEn, event.footerAr, event.footerHe),
