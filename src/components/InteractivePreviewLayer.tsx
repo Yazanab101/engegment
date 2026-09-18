@@ -55,7 +55,7 @@ function TornNoteGroup({ enlarged = false }: { enlarged?: boolean }) {
     <p className={enlarged ? styles.previewTornNoteText : heroStyles.tornNoteText}>
       <span className={enlarged ? styles.previewTornNoteLines : heroStyles.tornNoteLines}>
         {content.celebrationNote.split('\n').map((line: string, i: number) => (
-          <span key={line}>
+          <span key={`${line}-${i}`}>
             {i > 0 && <br />}
             {line}
           </span>
