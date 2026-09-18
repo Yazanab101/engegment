@@ -1,6 +1,11 @@
-import { Fragment, useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
-import { assets, invitation } from '../data/invitation'
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
+import { assets } from '../data/invitation'
+import { useInvitation } from '../invitation/InvitationContext'
+import {
+  isInvitationAudioUnlocked,
+  unlockInvitationAudio,
+} from '../lib/audio'
 import { luxuryEase, revealSpring } from './invitationReveal'
 import { TapIndicator } from './TapIndicator'
 import styles from './EnvelopePage.module.css'
@@ -21,10 +26,17 @@ const INTRO = {
 } as const
 
 const INTRO_READY_MS = 3800
+const AUTO_OPEN_MS = 5000
 
 export function EnvelopePage({ onOpen, disabled, exiting, skipIntro }: EnvelopePageProps) {
+  const { content, locale, t } = useInvitation()
+  const reduceMotion = useReducedMotion()
   const [introReady, setIntroReady] = useState(!!skipIntro)
   const [envelopeSettled, setEnvelopeSettled] = useState(!!skipIntro)
+  const [opening, setOpening] = useState(false)
+  const [countdown, setCountdown] = useState<number | null>(null)
+  const [audioReady, setAudioReady] = useState(() => isInvitationAudioUnlocked())
+  const openedRef = useRef(false)
 
   useEffect(() => {
     if (skipIntro) return
@@ -39,7 +51,57 @@ export function EnvelopePage({ onOpen, disabled, exiting, skipIntro }: EnvelopeP
     }
   }, [skipIntro])
 
-  const interactionLocked = disabled || !introReady
+  /* Browsers block timed audio unless we unlock during a real gesture first. */
+  useEffect(() => {
+    if (audioReady) return
+
+    const unlock = () => {
+      unlockInvitationAudio()
+      setAudioReady(true)
+    }
+
+    window.addEventListener('pointerdown', unlock, { once: true, capture: true })
+    window.addEventListener('keydown', unlock, { once: true, capture: true })
+    return () => {
+      window.removeEventListener('pointerdown', unlock, { capture: true })
+      window.removeEventListener('keydown', unlock, { capture: true })
+    }
+  }, [audioReady])
+
+  const openInvitation = useCallback(() => {
+    if (openedRef.current || disabled || !introReady) return
+    openedRef.current = true
+    setOpening(true)
+    setCountdown(null)
+    onOpen()
+  }, [disabled, introReady, onOpen])
+
+  useEffect(() => {
+    // Auto-open only after a user gesture unlocked audio — otherwise SFX/piano are muted.
+    if (!introReady || !audioReady || exiting || disabled || openedRef.current) {
+      setCountdown(null)
+      return
+    }
+
+    const totalSeconds = Math.ceil(AUTO_OPEN_MS / 1000)
+    setCountdown(totalSeconds)
+    const startedAt = performance.now()
+
+    const tick = window.setInterval(() => {
+      const elapsed = performance.now() - startedAt
+      const remaining = Math.max(0, Math.ceil((AUTO_OPEN_MS - elapsed) / 1000))
+      setCountdown(remaining > 0 ? remaining : null)
+      if (elapsed >= AUTO_OPEN_MS) {
+        window.clearInterval(tick)
+        openInvitation()
+      }
+    }, 100)
+
+    return () => window.clearInterval(tick)
+  }, [introReady, audioReady, exiting, disabled, openInvitation])
+
+  const interactionLocked = disabled || !introReady || opening
+  const hintActive = introReady && !exiting && !disabled && !opening
 
   const fadeUp = (delay: number, duration: number) => ({
     initial: skipIntro ? false : { opacity: 0, y: 14 },
@@ -48,6 +110,8 @@ export function EnvelopePage({ onOpen, disabled, exiting, skipIntro }: EnvelopeP
       ? { duration: 0 }
       : { delay, duration, ease: luxuryEase },
   })
+
+  const floatY = !reduceMotion && envelopeSettled && !exiting ? [0, -5, 0] : 0
 
   return (
     <motion.section
@@ -58,28 +122,37 @@ export function EnvelopePage({ onOpen, disabled, exiting, skipIntro }: EnvelopeP
       transition={{ duration: 0.55, ease: luxuryEase }}
     >
       <header className={styles.introHeader}>
+        {content.guestName && (
+          <motion.p className={styles.guestName} {...fadeUp(0, 0.8)}>
+            {content.guestName}
+          </motion.p>
+        )}
+
+        {content.inviteLead && (
+          <motion.p
+            className={`${styles.inviteLead} ${locale === 'AR' ? styles.inviteLeadArabic : ''}`}
+            dir={locale === 'AR' || locale === 'HE' ? 'rtl' : 'ltr'}
+            {...fadeUp(0.25, 0.85)}
+          >
+            {content.inviteLead}
+          </motion.p>
+        )}
+
         <motion.h1 className={styles.names} {...fadeUp(INTRO.names.delay, INTRO.names.duration)}>
-          {invitation.groom.toUpperCase()} &amp; {invitation.bride.toUpperCase()}
+          {content.groom.toUpperCase()} &amp; {content.bride.toUpperCase()}
         </motion.h1>
 
         <motion.p className={styles.date} {...fadeUp(INTRO.date.delay, INTRO.date.duration)}>
-          {invitation.saveTheDate}
-        </motion.p>
-
-        <motion.p
-          className={styles.subtitle}
-          {...fadeUp(INTRO.subtitle.delay, INTRO.subtitle.duration)}
-        >
-          {invitation.joinUsMessage}
+          {content.saveTheDate}
         </motion.p>
       </header>
 
       <button
         type="button"
         className={styles.hitArea}
-        onClick={onOpen}
+        onClick={openInvitation}
         disabled={interactionLocked}
-        aria-label="Tap envelope to open"
+        aria-label={t('tapToOpen')}
       >
         <div className={styles.envelopeGlow} aria-hidden />
 
@@ -88,17 +161,21 @@ export function EnvelopePage({ onOpen, disabled, exiting, skipIntro }: EnvelopeP
           initial={skipIntro ? false : { opacity: 0, y: 40 }}
           animate={{
             opacity: 1,
-            y: envelopeSettled && !exiting ? [0, -5, 0] : 0,
+            y: floatY,
           }}
           transition={
             skipIntro
               ? {
-                  y: { duration: 4.5, repeat: Infinity, ease: 'easeInOut' },
+                  y: reduceMotion
+                    ? { duration: 0 }
+                    : { duration: 4.5, repeat: Infinity, ease: 'easeInOut' },
                 }
               : {
                   opacity: { delay: INTRO.envelope.delay, duration: 0.6, ease: luxuryEase },
                   y: envelopeSettled
-                    ? { duration: 4.5, repeat: Infinity, ease: 'easeInOut' }
+                    ? reduceMotion
+                      ? { duration: 0 }
+                      : { duration: 4.5, repeat: Infinity, ease: 'easeInOut' }
                     : { delay: INTRO.envelope.delay, ...revealSpring(0) },
                 }
           }
@@ -110,8 +187,12 @@ export function EnvelopePage({ onOpen, disabled, exiting, skipIntro }: EnvelopeP
             draggable={false}
           />
 
-          <p className={styles.tagline}>
-            {invitation.tagline.split('\n').map((line, i) => (
+          <p
+            className={`${styles.tagline} ${locale === 'AR' ? styles.taglineArabic : ''}`}
+            dir={locale === 'AR' ? 'rtl' : undefined}
+            lang={locale === 'AR' ? 'ar' : undefined}
+          >
+            {content.tagline.split('\n').map((line, i) => (
               <Fragment key={line}>
                 {i > 0 && <br />}
                 <span className={styles.taglineLine}>{line}</span>
@@ -119,7 +200,7 @@ export function EnvelopePage({ onOpen, disabled, exiting, skipIntro }: EnvelopeP
             ))}
           </p>
 
-          <TapIndicator active={introReady && !exiting && !disabled} />
+          <TapIndicator active={hintActive} />
 
           <img
             className={styles.floralLeft}
@@ -139,18 +220,32 @@ export function EnvelopePage({ onOpen, disabled, exiting, skipIntro }: EnvelopeP
         </motion.div>
       </button>
 
-      <motion.p
-        className={styles.tapBottom}
+      <motion.div
+        className={styles.tapFooter}
         initial={skipIntro ? false : { opacity: 0 }}
-        animate={{ opacity: introReady ? 1 : 0 }}
+        animate={{ opacity: hintActive ? 1 : 0 }}
         transition={
           skipIntro
-            ? { duration: 0 }
-            : { delay: INTRO.instruction.delay, duration: INTRO.instruction.duration, ease: luxuryEase }
+            ? { duration: 0.35, ease: luxuryEase }
+            : {
+                delay: hintActive ? INTRO.instruction.delay : 0,
+                duration: hintActive ? INTRO.instruction.duration : 0.35,
+                ease: luxuryEase,
+              }
         }
       >
-        Tap Envelope To Open
-      </motion.p>
+        <p
+          className={`${styles.tapBottom} ${locale === 'AR' ? styles.tapBottomArabic : ''} ${locale === 'HE' ? styles.tapBottomHebrew : ''}`}
+          dir={locale === 'AR' || locale === 'HE' ? 'rtl' : 'ltr'}
+        >
+          {t('tapToOpen')}
+        </p>
+        {countdown != null && countdown > 0 && (
+          <p className={styles.countdown} aria-live="polite">
+            {countdown}
+          </p>
+        )}
+      </motion.div>
     </motion.section>
   )
 }

@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Language {
+  AR
+  HE
+  EN
+}
+
+enum RsvpStatus {
+  PENDING
+  ATTENDING
+  NOT_ATTENDING
+}
+
+enum InvitationStatus {
+  CREATED
+  OPENED
+  RESPONDED
+}
+
+enum InvitationEventType {
+  INVITATION_OPENED
+  RSVP_ATTENDING
+  RSVP_NOT_ATTENDING
+  RSVP_UPDATED
+  LOCATION_CLICKED
+  CALENDAR_CLICKED
+}
+
+enum GuestTag {
+  FAMILY
+  FRIENDS
+  WORK
+  BRIDE_FAMILY
+  GROOM_FAMILY
+  VIP
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Event {
+  id                    String    @id @default(cuid())
+  slug                  String    @unique @default("current")
+  title                 String
+  titleAr               String?
+  titleHe               String?
+  brideName             String
+  groomName             String
+  eventDate             DateTime
+  eventStartTime        String
+  venueName             String
+  venueNameAr           String?
+  venueNameHe           String?
+  venueAddress          String
+  venueAddressAr        String?
+  venueAddressHe        String?
+  googleMapsUrl         String?
+  wazeUrl               String?
+  latitude              Float?
+  longitude             Float?
+  rsvpDeadline          DateTime?
+  contactPhone          String?
+  whatsappPhone         String?
+  dressCode             String?
+  dressCodeAr           String?
+  dressCodeHe           String?
+  parkingInfo           String?
+  parkingInfoAr         String?
+  parkingInfoHe         String?
+  additionalInfo        String?
+  additionalInfoAr      String?
+  additionalInfoHe      String?
+  showTableAssignments  Boolean   @default(false)
+  introEn               String?
+  introAr               String?
+  introHe               String?
+  footerEn              String?
+  footerAr              String?
+  footerHe              String?
+  taglineEn             String?
+  taglineAr             String?
+  taglineHe             String?
+  joinUsMessageEn       String?
+  joinUsMessageAr       String?
+  joinUsMessageHe       String?
+  inviteLeadEn          String?
+  inviteLeadAr          String?
+  inviteLeadHe          String?
+  celebrationNoteEn     String?
+  celebrationNoteAr     String?
+  celebrationNoteHe     String?
+  ticketHeadingEn       String?
+  ticketHeadingAr       String?
+  ticketHeadingHe       String?
+  imageCoupleColor      String?
+  imageCoupleBw         String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  guests                Guest[]
+}
+
+model Guest {
+  id                String           @id @default(cuid())
+  eventId           String
+  event             Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  fullName          String
+  phoneNumber       String?
+  email             String?
+  language          Language         @default(EN)
+  inviteToken       String           @unique
+  isActive          Boolean          @default(true)
+  maxGuestsAllowed  Int              @default(1)
+  invitationStatus  InvitationStatus @default(CREATED)
+  firstOpenedAt     DateTime?
+  lastOpenedAt      DateTime?
+  openCount         Int              @default(0)
+  notes             String?
+  tags              GuestTag[]       @default([])
+  tableNumber       String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  rsvp              Rsvp?
+  events            InvitationEvent[]
+
+  @@index([eventId])
+  @@index([language])
+  @@index([invitationStatus])
+  @@index([fullName])
+  @@index([phoneNumber])
+  @@index([email])
+}
+
+model Rsvp {
+  id          String     @id @default(cuid())
+  guestId     String     @unique
+  guest       Guest      @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  status      RsvpStatus @default(PENDING)
+  guestCount  Int        @default(0)
+  message     String?
+  submittedAt DateTime?
+  updatedAt   DateTime   @updatedAt
+  createdAt   DateTime   @default(now())
+}
+
+model InvitationEvent {
+  id        String              @id @default(cuid())
+  guestId   String
+  guest     Guest               @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  type      InvitationEventType
+  metadata  Json?
+  createdAt DateTime            @default(now())
+
+  @@index([guestId, type, createdAt])
+  @@index([createdAt])
+}

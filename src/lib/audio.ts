@@ -22,7 +22,9 @@ let pianoElement: HTMLAudioElement | null = null
 let pianoFadeFrame: number | null = null
 let pianoPlayed = false
 let pianoPlaying = false
+let pianoArmed = false
 let unlocked = false
+let pianoListenersBound = false
 
 function getSfx(id: SfxId): HTMLAudioElement {
   let audio = sfxElements.get(id)
@@ -75,6 +77,43 @@ function fadePianoVolume(
   pianoFadeFrame = requestAnimationFrame(tick)
 }
 
+function primeSfxElement(audio: HTMLAudioElement, restoreVolume: number): void {
+  const previous = audio.volume
+  audio.muted = true
+  audio.volume = 0
+  void audio
+    .play()
+    .then(() => {
+      audio.pause()
+      audio.currentTime = 0
+      audio.muted = false
+      audio.volume = restoreVolume
+    })
+    .catch(() => {
+      audio.muted = false
+      audio.volume = previous || restoreVolume
+    })
+}
+
+/**
+ * Keep piano actively playing at volume 0 after a gesture.
+ * Later audible start only fades volume — no new blocked play() call.
+ */
+function armSilentPiano(): void {
+  if (!unlocked) return
+
+  const audio = getPiano()
+  audio.muted = false
+  audio.volume = 0
+
+  if (pianoArmed && !audio.paused) return
+
+  pianoArmed = true
+  void audio.play().catch(() => {
+    pianoArmed = false
+  })
+}
+
 export function preloadInvitationAudio(): void {
   ;(Object.keys(SFX_SOURCES) as SfxId[]).forEach((id) => {
     getSfx(id).load()
@@ -85,12 +124,28 @@ export function preloadEngagementPiano(): void {
   getPiano().load()
 }
 
-/** Call from a user-gesture handler before any playback (required on mobile). */
+export function isInvitationAudioUnlocked(): boolean {
+  return unlocked
+}
+
 export function unlockInvitationAudio(): void {
-  if (unlocked) return
+  if (unlocked) {
+    armSilentPiano()
+    return
+  }
   unlocked = true
   preloadInvitationAudio()
   preloadEngagementPiano()
+
+  ;(Object.keys(SFX_SOURCES) as SfxId[]).forEach((id) => {
+    primeSfxElement(getSfx(id), SFX_VOLUMES[id])
+  })
+  armSilentPiano()
+}
+
+export function keepEngagementPianoArmed(): void {
+  if (!unlocked) return
+  armSilentPiano()
 }
 
 function playSfx(id: SfxId): void {
@@ -108,6 +163,8 @@ function playSfx(id: SfxId): void {
     audio.removeEventListener('ended', onEnded)
   }
 
+  audio.muted = false
+  audio.volume = SFX_VOLUMES[id]
   audio.addEventListener('ended', onEnded)
   audio.currentTime = 0
   sfxPlaying.add(id)
@@ -130,14 +187,6 @@ export function playEngagementPiano(): void {
   if (!unlocked || pianoPlayed || pianoPlaying) return
 
   const audio = getPiano()
-  pianoPlayed = true
-  pianoPlaying = true
-
-  cancelPianoFade()
-  audio.pause()
-  audio.currentTime = 0
-  audio.volume = 0
-
   let fadeInDone = false
 
   const onTimeUpdate = () => {
@@ -152,25 +201,51 @@ export function playEngagementPiano(): void {
 
   const onEnded = () => {
     pianoPlaying = false
+    pianoArmed = false
+    pianoListenersBound = false
     cancelPianoFade()
     audio.removeEventListener('timeupdate', onTimeUpdate)
     audio.removeEventListener('ended', onEnded)
     audio.volume = 0
   }
 
-  audio.addEventListener('timeupdate', onTimeUpdate)
-  audio.addEventListener('ended', onEnded)
-
-  void audio.play().then(() => {
+  const fadeInFromSilence = () => {
+    pianoPlayed = true
+    pianoPlaying = true
+    pianoArmed = true
+    audio.muted = false
+    try {
+      audio.currentTime = 0
+    } catch {
+      /* ignore */
+    }
+    audio.volume = 0
+    if (!pianoListenersBound) {
+      audio.addEventListener('timeupdate', onTimeUpdate)
+      audio.addEventListener('ended', onEnded)
+      pianoListenersBound = true
+    }
     fadePianoVolume(audio, 0, PIANO_VOLUME, PIANO_FADE_IN_MS, () => {
       fadeInDone = true
       audio.volume = PIANO_VOLUME
     })
-  }).catch(() => {
-    pianoPlaying = false
-    audio.removeEventListener('timeupdate', onTimeUpdate)
-    audio.removeEventListener('ended', onEnded)
-  })
+  }
+
+  if (!audio.paused) {
+    fadeInFromSilence()
+    return
+  }
+
+  void audio
+    .play()
+    .then(() => {
+      fadeInFromSilence()
+    })
+    .catch(() => {
+      pianoPlaying = false
+      pianoPlayed = false
+      pianoArmed = false
+    })
 }
 
 export function stopInvitationAudio(): void {
@@ -187,4 +262,8 @@ export function stopInvitationAudio(): void {
     pianoElement.volume = 0
     pianoPlaying = false
   }
+
+  pianoPlayed = false
+  pianoArmed = false
+  pianoListenersBound = false
 }

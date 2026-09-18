@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react'
 import { LayoutGroup, motion } from 'framer-motion'
 import { useInvitationAudio } from '../hooks/useInvitationAudio'
-import { assets, invitation } from '../data/invitation'
+import { assets } from '../data/invitation'
+import { useInvitation } from '../invitation/InvitationContext'
 import {
   InteractivePreviewLayer,
   PreviewTarget,
@@ -17,6 +18,7 @@ import {
   ticketSlideReveal,
 } from './invitationReveal'
 import styles from './InvitationHero.module.css'
+import { InvitationExtras } from './InvitationExtras'
 
 interface InvitationHeroProps {
   onClose: () => void
@@ -25,6 +27,7 @@ interface InvitationHeroProps {
 
 export function InvitationHero({ onClose, disabled }: InvitationHeroProps) {
   useInvitationAudio()
+  const { content, t } = useInvitation()
   const [selectedItem, setSelectedItem] = useState<PreviewItemId | null>(null)
 
   const handleSelect = useCallback((id: PreviewItemId) => {
@@ -33,6 +36,13 @@ export function InvitationHero({ onClose, disabled }: InvitationHeroProps) {
 
   const handleClosePreview = useCallback(() => {
     setSelectedItem(null)
+  }, [])
+
+  const scrollToDetails = useCallback(() => {
+    document.getElementById('invitation-details')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
   }, [])
 
   const ticketHidden = selectedItem === 'goldTicket'
@@ -95,7 +105,7 @@ export function InvitationHero({ onClose, disabled }: InvitationHeroProps) {
                 >
                   <motion.img
                     className={styles.couplePhoto}
-                    src={assets.couplePhotoTicketBg}
+                    src={content.imageCoupleColor}
                     alt=""
                     aria-hidden
                     draggable={false}
@@ -114,7 +124,7 @@ export function InvitationHero({ onClose, disabled }: InvitationHeroProps) {
                 >
                   <motion.img
                     className={styles.couplePhotoBw}
-                    src={assets.couplePhotoBw}
+                    src={content.imageCoupleBw}
                     alt=""
                     aria-hidden
                     draggable={false}
@@ -171,10 +181,10 @@ export function InvitationHero({ onClose, disabled }: InvitationHeroProps) {
                   transition={revealSpring(REVEAL.ticket)}
                 >
                   <div className={styles.ticketText}>
-                    <span className={styles.saveWord}>Save</span>
-                    <span className={styles.theWord}>the</span>
-                    <span className={styles.dateWord}>Date</span>
-                    <span className={styles.saveDateNum}>{invitation.saveTheDate}</span>
+                    <span className={styles.saveWord}>{content.ticketLines[0]}</span>
+                    <span className={styles.theWord}>{content.ticketLines[1]}</span>
+                    <span className={styles.dateWord}>{content.ticketLines[2]}</span>
+                    <span className={styles.saveDateNum}>{content.saveTheDate}</span>
                   </div>
                 </motion.div>
 
@@ -187,7 +197,7 @@ export function InvitationHero({ onClose, disabled }: InvitationHeroProps) {
                 >
                   <div className={styles.ticketSideNames}>
                     <p className={styles.ticketSideNamesText}>
-                      {invitation.groom} & {invitation.bride}
+                      {content.groom} & {content.bride}
                     </p>
                   </div>
                 </motion.div>
@@ -213,9 +223,9 @@ export function InvitationHero({ onClose, disabled }: InvitationHeroProps) {
                 />
 
                 <p className={styles.envelopeCoupleNames} aria-hidden>
-                  {invitation.groom}{' '}
+                  {content.groom}{' '}
                   <span className={styles.envelopeCoupleAmp}>&amp;</span>{' '}
-                  {invitation.bride}
+                  {content.bride}
                 </p>
 
                 <motion.img
@@ -238,14 +248,33 @@ export function InvitationHero({ onClose, disabled }: InvitationHeroProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={revealTransition(REVEAL.frontFlowers + 0.35, 0.9)}
           >
+            {content.guestName && (
+              <p className={styles.belowEnvelopeGuest}>{content.guestName}</p>
+            )}
+            {content.inviteLead && (
+              <p
+                className={`${styles.belowEnvelopeLead} ${content.language === 'AR' ? styles.belowEnvelopeLeadArabic : ''}`}
+                dir={content.language === 'AR' || content.language === 'HE' ? 'rtl' : 'ltr'}
+              >
+                {content.inviteLead}
+              </p>
+            )}
             <p className={styles.belowEnvelopeNames}>
-              {invitation.groom}{' '}
+              {content.groom}{' '}
               <span className={styles.belowEnvelopeAmp}>&amp;</span>{' '}
-              {invitation.bride}
+              {content.bride}
             </p>
-            <p className={styles.belowEnvelopeDate}>{invitation.dateShort}</p>
-            <p className={styles.belowEnvelopeJoin}>{invitation.joinUsMessage}</p>
+            <p className={styles.belowEnvelopeDate}>{content.dateShort}</p>
+            <button
+              type="button"
+              className={styles.detailsButton}
+              onClick={scrollToDetails}
+            >
+              {t('details')}
+            </button>
           </motion.footer>
+
+          <InvitationExtras />
 
           <button
             type="button"
@@ -253,7 +282,7 @@ export function InvitationHero({ onClose, disabled }: InvitationHeroProps) {
             onClick={onClose}
             disabled={disabled}
           >
-            {invitation.returnToEnvelope}
+            {content.returnToEnvelope}
           </button>
         </div>
       </motion.div>

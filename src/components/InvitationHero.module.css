@@ -362,6 +362,38 @@
   line-height: 1.15;
 }
 
+.belowEnvelopeGuest {
+  margin: 0 0 0.15rem;
+  font-family: var(--font-luxury-serif, Georgia, serif);
+  font-size: clamp(1rem, 3.5cqw, 1.25rem);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: #29120b;
+  line-height: 1.35;
+}
+
+.belowEnvelopeLead {
+  margin: 0.2rem 0 0.35rem;
+  max-width: 96%;
+  font-family: var(--font-luxury-serif, Georgia, serif);
+  font-size: clamp(1.15rem, 4.2cqw, 1.45rem);
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: 0.03em;
+  color: #29120b;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.belowEnvelopeLeadArabic {
+  font-family: 'Aref Ruqaa', serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: clamp(1.3rem, 5cqw, 1.7rem);
+  letter-spacing: 0;
+  line-height: 1.6;
+}
+
 .belowEnvelopeAmp {
   font-family: 'Parfumerie Script', cursive;
   font-size: clamp(1.25rem, 5cqw, 1.85rem);
@@ -384,6 +416,31 @@
   font-weight: 400;
   letter-spacing: 0.05em;
   color: #29120b;
+}
+
+.detailsButton {
+  appearance: none;
+  margin-top: clamp(0.35rem, 1.5cqw, 0.65rem);
+  padding: 0.65rem 1.55rem;
+  border: 1px solid rgba(41, 18, 11, 0.18);
+  border-radius: 999px;
+  background: rgba(41, 18, 11, 0.06);
+  color: #29120b;
+  font-family: var(--font-luxury-serif, Georgia, serif);
+  font-size: clamp(0.9rem, 3.2cqw, 1.05rem);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+
+.detailsButton:hover {
+  background: rgba(41, 18, 11, 0.1);
+  border-color: rgba(41, 18, 11, 0.28);
+}
+
+.detailsButton:active {
+  opacity: 0.85;
 }
 
 .belowEnvelopeJoin {
@@ -545,4 +602,3 @@
     width: min(92vw, 960px);
   }
 }
-

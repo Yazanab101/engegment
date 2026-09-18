@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
 import { useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { assets, invitation } from '../data/invitation'
+import { assets } from '../data/invitation'
+import { useInvitation } from '../invitation/InvitationContext'
 import {
   type PreviewItemId,
   previewEase,
@@ -17,6 +18,7 @@ interface InteractivePreviewLayerProps {
 }
 
 function TicketGroup({ enlarged = false }: { enlarged?: boolean }) {
+  const { content } = useInvitation()
   const textWrapClass = enlarged ? styles.previewTicketText : heroStyles.ticketText
   const sideClass = enlarged ? styles.previewTicketSideNames : heroStyles.ticketSideNames
   const sideTextClass = enlarged ? styles.previewTicketSideNamesText : heroStyles.ticketSideNamesText
@@ -32,14 +34,14 @@ function TicketGroup({ enlarged = false }: { enlarged?: boolean }) {
           draggable={false}
         />
         <div className={textWrapClass}>
-          <span className={heroStyles.saveWord}>Save</span>
-          <span className={heroStyles.theWord}>the</span>
-          <span className={heroStyles.dateWord}>Date</span>
-          <span className={heroStyles.saveDateNum}>{invitation.saveTheDate}</span>
+          <span className={heroStyles.saveWord}>{content.ticketLines[0]}</span>
+          <span className={heroStyles.theWord}>{content.ticketLines[1]}</span>
+          <span className={heroStyles.dateWord}>{content.ticketLines[2]}</span>
+          <span className={heroStyles.saveDateNum}>{content.saveTheDate}</span>
         </div>
         <div className={sideClass}>
           <p className={sideTextClass}>
-            {invitation.groom} & {invitation.bride}
+            {content.groom} & {content.bride}
           </p>
         </div>
       </div>
@@ -48,11 +50,12 @@ function TicketGroup({ enlarged = false }: { enlarged?: boolean }) {
 }
 
 function TornNoteGroup({ enlarged = false }: { enlarged?: boolean }) {
+  const { content } = useInvitation()
   const noteText = (
     <p className={enlarged ? styles.previewTornNoteText : heroStyles.tornNoteText}>
       <span className={enlarged ? styles.previewTornNoteLines : heroStyles.tornNoteLines}>
-        {invitation.celebrationNote.split('\n').map((line, i) => (
-          <span key={line}>
+        {content.celebrationNote.split('\n').map((line: string, i: number) => (
+          <span key={`${line}-${i}`}>
             {i > 0 && <br />}
             {line}
           </span>
@@ -92,12 +95,13 @@ function TornNoteGroup({ enlarged = false }: { enlarged?: boolean }) {
 }
 
 function PreviewContent({ id }: { id: PreviewItemId }) {
+  const { content } = useInvitation()
   switch (id) {
     case 'largePhoto':
       return (
         <img
           className={styles.previewPhoto}
-          src={assets.couplePhotoTicketBg}
+          src={content.imageCoupleColor}
           alt="Couple photo"
           draggable={false}
         />
@@ -107,7 +111,7 @@ function PreviewContent({ id }: { id: PreviewItemId }) {
       return (
         <img
           className={`${styles.previewPhoto} ${styles.previewPhotoSmall}`}
-          src={assets.couplePhotoBw}
+          src={content.imageCoupleBw}
           alt="Black and white couple photo"
           draggable={false}
         />

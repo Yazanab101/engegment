@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import {
+  keepEngagementPianoArmed,
   playEnvelopeOpen,
   preloadInvitationAudio,
   stopInvitationAudio,
@@ -9,9 +10,11 @@ import {
 import { assets } from '../data/invitation'
 import { EnvelopePage } from './EnvelopePage'
 import { InvitationHero } from './InvitationHero'
+import { useInvitation } from '../invitation/InvitationContext'
 import styles from './OpeningExperience.module.css'
 
 export function OpeningExperience() {
+  const { rtl } = useInvitation()
   const [hasSeenIntro, setHasSeenIntro] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
@@ -22,9 +25,15 @@ export function OpeningExperience() {
     img.src = assets.envelope
   }, [])
 
+  useEffect(() => {
+    document.documentElement.dir = rtl ? 'rtl' : 'ltr'
+    document.documentElement.lang = rtl ? (document.documentElement.lang || 'ar') : 'en'
+  }, [rtl])
+
   const handleOpen = useCallback(() => {
     if (isOpen || isAnimating) return
     unlockInvitationAudio()
+    keepEngagementPianoArmed()
     playEnvelopeOpen()
     setHasSeenIntro(true)
     setIsAnimating(true)
