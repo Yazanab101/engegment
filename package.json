@@ -5,9 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:server": "npm run dev --prefix server",
+    "dev:all": "npm run dev:server & npm run dev",
     "build": "tsc -b && vite build",
+    "build:server": "npm run build --prefix server",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "db:migrate": "npm run db:migrate --prefix server",
+    "db:seed": "npm run db:seed --prefix server",
+    "test:server": "npm test --prefix server"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
@@ -16,6 +22,7 @@
     "framer-motion": "^12.40.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
+    "react-router-dom": "^7.18.4",
     "tailwindcss": "^4.3.1",
     "three": "^0.184.0"
   },

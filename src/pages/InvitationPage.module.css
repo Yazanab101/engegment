@@ -1,0 +1,10 @@
+.state {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  background: var(--ivory, #f7f1e8);
+  color: rgb(41, 18, 11);
+  font-family: var(--font-luxury-serif, Georgia, serif);
+  text-align: center;
+}

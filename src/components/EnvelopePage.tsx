@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { assets, invitation } from '../data/invitation'
+import { assets } from '../data/invitation'
+import { useInvitation } from '../invitation/InvitationContext'
 import { luxuryEase, revealSpring } from './invitationReveal'
 import { TapIndicator } from './TapIndicator'
 import styles from './EnvelopePage.module.css'
@@ -23,6 +24,7 @@ const INTRO = {
 const INTRO_READY_MS = 3800
 
 export function EnvelopePage({ onOpen, disabled, exiting, skipIntro }: EnvelopePageProps) {
+  const { content } = useInvitation()
   const [introReady, setIntroReady] = useState(!!skipIntro)
   const [envelopeSettled, setEnvelopeSettled] = useState(!!skipIntro)
 
@@ -58,19 +60,25 @@ export function EnvelopePage({ onOpen, disabled, exiting, skipIntro }: EnvelopeP
       transition={{ duration: 0.55, ease: luxuryEase }}
     >
       <header className={styles.introHeader}>
+        {content.dearLine && (
+          <motion.p className={styles.subtitle} {...fadeUp(0, 0.8)}>
+            {content.dearLine}
+          </motion.p>
+        )}
+
         <motion.h1 className={styles.names} {...fadeUp(INTRO.names.delay, INTRO.names.duration)}>
-          {invitation.groom.toUpperCase()} &amp; {invitation.bride.toUpperCase()}
+          {content.groom.toUpperCase()} &amp; {content.bride.toUpperCase()}
         </motion.h1>
 
         <motion.p className={styles.date} {...fadeUp(INTRO.date.delay, INTRO.date.duration)}>
-          {invitation.saveTheDate}
+          {content.saveTheDate}
         </motion.p>
 
         <motion.p
           className={styles.subtitle}
           {...fadeUp(INTRO.subtitle.delay, INTRO.subtitle.duration)}
         >
-          {invitation.joinUsMessage}
+          {content.joinUsMessage}
         </motion.p>
       </header>
 
@@ -111,7 +119,7 @@ export function EnvelopePage({ onOpen, disabled, exiting, skipIntro }: EnvelopeP
           />
 
           <p className={styles.tagline}>
-            {invitation.tagline.split('\n').map((line, i) => (
+            {content.tagline.split('\n').map((line, i) => (
               <Fragment key={line}>
                 {i > 0 && <br />}
                 <span className={styles.taglineLine}>{line}</span>

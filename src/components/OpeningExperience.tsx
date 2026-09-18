@@ -9,9 +9,11 @@ import {
 import { assets } from '../data/invitation'
 import { EnvelopePage } from './EnvelopePage'
 import { InvitationHero } from './InvitationHero'
+import { useInvitation } from '../invitation/InvitationContext'
 import styles from './OpeningExperience.module.css'
 
 export function OpeningExperience() {
+  const { rtl } = useInvitation()
   const [hasSeenIntro, setHasSeenIntro] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
@@ -21,6 +23,11 @@ export function OpeningExperience() {
     const img = new Image()
     img.src = assets.envelope
   }, [])
+
+  useEffect(() => {
+    document.documentElement.dir = rtl ? 'rtl' : 'ltr'
+    document.documentElement.lang = rtl ? (document.documentElement.lang || 'ar') : 'en'
+  }, [rtl])
 
   const handleOpen = useCallback(() => {
     if (isOpen || isAnimating) return
