@@ -50,13 +50,16 @@ function TicketGroup({ enlarged = false }: { enlarged?: boolean }) {
 }
 
 function TornNoteGroup({ enlarged = false }: { enlarged?: boolean }) {
-  const { content, t } = useInvitation()
+  const { content } = useInvitation()
   const noteText = (
     <p className={enlarged ? styles.previewTornNoteText : heroStyles.tornNoteText}>
       <span className={enlarged ? styles.previewTornNoteLines : heroStyles.tornNoteLines}>
-        <span>{t('celebrationTime')}</span>
-        <br />
-        <span>{content.time}</span>
+        {content.celebrationNote.split('\n').map((line: string, i: number) => (
+          <span key={`${line}-${i}`}>
+            {i > 0 && <br />}
+            {line}
+          </span>
+        ))}
       </span>
       <span className={enlarged ? styles.previewTornNoteHeart : heroStyles.tornNoteHeart}>
         ♥
