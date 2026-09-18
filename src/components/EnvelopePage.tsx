@@ -24,7 +24,7 @@ const INTRO = {
 const INTRO_READY_MS = 3800
 
 export function EnvelopePage({ onOpen, disabled, exiting, skipIntro }: EnvelopePageProps) {
-  const { content } = useInvitation()
+  const { content, locale } = useInvitation()
   const [introReady, setIntroReady] = useState(!!skipIntro)
   const [envelopeSettled, setEnvelopeSettled] = useState(!!skipIntro)
 
@@ -118,7 +118,11 @@ export function EnvelopePage({ onOpen, disabled, exiting, skipIntro }: EnvelopeP
             draggable={false}
           />
 
-          <p className={styles.tagline}>
+          <p
+            className={`${styles.tagline} ${locale === 'AR' ? styles.taglineArabic : ''}`}
+            dir={locale === 'AR' ? 'rtl' : undefined}
+            lang={locale === 'AR' ? 'ar' : undefined}
+          >
             {content.tagline.split('\n').map((line, i) => (
               <Fragment key={line}>
                 {i > 0 && <br />}
