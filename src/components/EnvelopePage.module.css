@@ -193,14 +193,14 @@
 .taglineArabic {
   font-family: 'Aref Ruqaa', serif;
   font-weight: 400;
-  font-size: clamp(0.72rem, 3.2cqw, 0.95rem);
-  line-height: 1.25;
+  font-size: clamp(0.65rem, 2.8cqw, 0.85rem);
+  line-height: 1.2;
   letter-spacing: 0;
   text-align: center;
   direction: rtl;
-  top: 8%;
-  width: 54%;
-  left: 23%;
+  top: 9%;
+  width: 50%;
+  left: 25%;
 }
 
 .taglineArabic .taglineLine {
@@ -259,9 +259,9 @@
   }
 
   .taglineArabic {
-    font-size: clamp(0.68rem, 3.4cqw, 0.88rem);
-    line-height: 1.25;
-    top: 7.5%;
+    font-size: clamp(0.6rem, 3cqw, 0.8rem);
+    line-height: 1.2;
+    top: 8%;
   }
 
   .tapBottom {
