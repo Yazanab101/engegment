@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Guest" ADD COLUMN "inviteSent" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "Guest" ADD COLUMN "inviteSentAt" TIMESTAMP(3);

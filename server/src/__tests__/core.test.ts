@@ -4,6 +4,7 @@ import { validateGuestCount } from '../services/rsvpService.js'
 import { AppError } from '../lib/errors.js'
 import { buildWhatsAppInviteMessage } from '../services/whatsappService.js'
 import { sanitizeMessage } from '../lib/sanitize.js'
+import { composeGuestDisplayName } from '../lib/guestDisplayName.js'
 
 describe('invite tokens', () => {
   it('generates unique unguessable tokens', () => {
@@ -19,12 +20,13 @@ describe('RSVP guest count validation', () => {
     expect(validateGuestCount('NOT_ATTENDING', 5, 4)).toBe(0)
   })
 
-  it('allows counts within max', () => {
-    expect(validateGuestCount('ATTENDING', 3, 4)).toBe(3)
+  it('allows counts freely within soft max', () => {
+    expect(validateGuestCount('ATTENDING', 3, 1)).toBe(3)
+    expect(validateGuestCount('ATTENDING', 12, 1)).toBe(12)
   })
 
-  it('rejects counts above max', () => {
-    expect(() => validateGuestCount('ATTENDING', 5, 4)).toThrow(AppError)
+  it('rejects counts above soft max', () => {
+    expect(() => validateGuestCount('ATTENDING', 51, 100)).toThrow(AppError)
   })
 
   it('rejects zero when attending', () => {
@@ -52,5 +54,55 @@ describe('sanitize', () => {
     const cleaned = sanitizeMessage(raw)
     expect(cleaned).not.toContain('<script>')
     expect(cleaned.length).toBeLessThanOrEqual(500)
+  })
+})
+
+describe('composeGuestDisplayName', () => {
+  it('falls back to fullName for legacy guests', () => {
+    expect(
+      composeGuestDisplayName({
+        fullName: 'حضرة السيد عامر بولص',
+        language: 'AR',
+        titleKey: null,
+        includeFamily: false,
+        familySuffixKey: null,
+      }),
+    ).toBe('حضرة السيد عامر بولص')
+  })
+
+  it('composes Arabic title + name + family', () => {
+    expect(
+      composeGuestDisplayName({
+        fullName: 'عامر بولص',
+        language: 'AR',
+        titleKey: 'mr',
+        includeFamily: true,
+        familySuffixKey: 'his_family',
+      }),
+    ).toBe('حضرة السيد عامر بولص وعائلته المحترمين')
+  })
+
+  it('omits title when none', () => {
+    expect(
+      composeGuestDisplayName({
+        fullName: 'Amer Boulos',
+        language: 'EN',
+        titleKey: 'none',
+        includeFamily: false,
+        familySuffixKey: null,
+      }),
+    ).toBe('Amer Boulos')
+  })
+
+  it('keeps personal name when language changes', () => {
+    expect(
+      composeGuestDisplayName({
+        fullName: 'عامر بولص',
+        language: 'HE',
+        titleKey: 'mr',
+        includeFamily: true,
+        familySuffixKey: 'his_family',
+      }),
+    ).toBe(`מר ${'عامر بولص'} ומשפחתו`)
   })
 })

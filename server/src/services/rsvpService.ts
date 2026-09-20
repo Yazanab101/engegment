@@ -13,10 +13,13 @@ export const rsvpBodySchema = z.object({
 
 export type RsvpBody = z.infer<typeof rsvpBodySchema>
 
+/** Soft ceiling only — guests pick freely; no per-invitation max. */
+export const RSVP_GUEST_COUNT_SOFT_MAX = 50
+
 export function validateGuestCount(
   status: 'ATTENDING' | 'NOT_ATTENDING',
   guestCount: number | undefined,
-  maxGuestsAllowed: number,
+  _maxGuestsAllowed?: number,
 ): number {
   if (status === 'NOT_ATTENDING') return 0
 
@@ -24,10 +27,10 @@ export function validateGuestCount(
   if (count < 1) {
     throw new AppError(400, 'At least 1 guest is required when attending', 'INVALID_GUEST_COUNT')
   }
-  if (count > maxGuestsAllowed) {
+  if (count > RSVP_GUEST_COUNT_SOFT_MAX) {
     throw new AppError(
       400,
-      `Guest count cannot exceed ${maxGuestsAllowed}`,
+      `Guest count cannot exceed ${RSVP_GUEST_COUNT_SOFT_MAX}`,
       'GUEST_LIMIT_EXCEEDED',
     )
   }
@@ -54,12 +57,14 @@ export async function submitRsvp(token: string, body: RsvpBody, options?: { allo
       status: body.status,
       guestCount,
       message,
+      setByAdmin: false,
       submittedAt: now,
     },
     update: {
       status: body.status,
       guestCount,
       message,
+      setByAdmin: false,
       submittedAt: previous?.submittedAt ?? now,
     },
   })
@@ -98,7 +103,12 @@ export async function adminSetRsvp(
     if (guest.rsvp) {
       await prisma.rsvp.update({
         where: { guestId },
-        data: { status: 'PENDING', guestCount: 0, message: data.message ?? null },
+        data: {
+          status: 'PENDING',
+          guestCount: 0,
+          message: data.message ?? null,
+          setByAdmin: false,
+        },
       })
     }
     await prisma.guest.update({
@@ -125,11 +135,17 @@ export async function adminSetRsvp(
       status: data.status,
       guestCount: count,
       message: message ?? null,
+      setByAdmin: true,
       submittedAt: now,
     },
     update: {
       status: data.status,
       guestCount: count,
+      // Keep guest-visible RSVP when admin only corrects the headcount
+      setByAdmin:
+        guest.rsvp?.status === data.status && data.status === 'ATTENDING'
+          ? guest.rsvp.setByAdmin
+          : true,
       ...(message !== undefined ? { message } : {}),
       submittedAt: guest.rsvp?.submittedAt ?? now,
     },

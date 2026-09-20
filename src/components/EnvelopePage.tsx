@@ -123,7 +123,11 @@ export function EnvelopePage({ onOpen, disabled, exiting, skipIntro }: EnvelopeP
     >
       <header className={styles.introHeader}>
         {content.guestName && (
-          <motion.p className={styles.guestName} {...fadeUp(0, 0.8)}>
+          <motion.p
+            className={styles.guestName}
+            dir={locale === 'AR' || locale === 'HE' ? 'rtl' : 'ltr'}
+            {...fadeUp(0, 0.8)}
+          >
             {content.guestName}
           </motion.p>
         )}

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { LayoutGroup, motion } from 'framer-motion'
 import { useInvitationAudio } from '../hooks/useInvitationAudio'
 import { assets } from '../data/invitation'
@@ -15,6 +15,8 @@ import {
   revealSpring,
   revealTransition,
   slideUpReveal,
+  ticketPreviewToggle,
+  ticketRevealSpring,
   ticketSlideReveal,
 } from './invitationReveal'
 import styles from './InvitationHero.module.css'
@@ -29,6 +31,7 @@ export function InvitationHero({ onClose, disabled }: InvitationHeroProps) {
   useInvitationAudio()
   const { content, t } = useInvitation()
   const [selectedItem, setSelectedItem] = useState<PreviewItemId | null>(null)
+  const [ticketEntered, setTicketEntered] = useState(false)
 
   const handleSelect = useCallback((id: PreviewItemId) => {
     setSelectedItem(id)
@@ -45,7 +48,15 @@ export function InvitationHero({ onClose, disabled }: InvitationHeroProps) {
     })
   }, [])
 
+  useEffect(() => {
+    const id = window.setTimeout(() => setTicketEntered(true), (REVEAL.ticket + 0.85) * 1000)
+    return () => window.clearTimeout(id)
+  }, [])
+
   const ticketHidden = selectedItem === 'goldTicket'
+  const ticketMotionTransition = ticketEntered
+    ? ticketPreviewToggle
+    : ticketRevealSpring(REVEAL.ticket)
 
   return (
     <LayoutGroup id="collage-preview">
@@ -156,7 +167,7 @@ export function InvitationHero({ onClose, disabled }: InvitationHeroProps) {
                   className={`${styles.ticketRevealLayer} ${styles.ticketRevealLayerBg}`}
                   initial={ticketSlideReveal.initial}
                   animate={{ ...ticketSlideReveal.animate, opacity: ticketHidden ? 0 : 1 }}
-                  transition={revealSpring(REVEAL.ticket)}
+                  transition={ticketMotionTransition}
                 >
                   <img
                     className={styles.ticketBg}
@@ -178,7 +189,7 @@ export function InvitationHero({ onClose, disabled }: InvitationHeroProps) {
                   className={`${styles.ticketRevealLayer} ${styles.ticketRevealLayerText}`}
                   initial={ticketSlideReveal.initial}
                   animate={{ ...ticketSlideReveal.animate, opacity: ticketHidden ? 0 : 1 }}
-                  transition={revealSpring(REVEAL.ticket)}
+                  transition={ticketMotionTransition}
                 >
                   <div className={styles.ticketText}>
                     <span className={styles.saveWord}>{content.ticketLines[0]}</span>
@@ -193,7 +204,7 @@ export function InvitationHero({ onClose, disabled }: InvitationHeroProps) {
                   aria-hidden
                   initial={ticketSlideReveal.initial}
                   animate={{ ...ticketSlideReveal.animate, opacity: ticketHidden ? 0 : 1 }}
-                  transition={revealSpring(REVEAL.ticket)}
+                  transition={ticketMotionTransition}
                 >
                   <div className={styles.ticketSideNames}>
                     <p className={styles.ticketSideNamesText}>
@@ -249,7 +260,12 @@ export function InvitationHero({ onClose, disabled }: InvitationHeroProps) {
             transition={revealTransition(REVEAL.frontFlowers + 0.35, 0.9)}
           >
             {content.guestName && (
-              <p className={styles.belowEnvelopeGuest}>{content.guestName}</p>
+              <p
+                className={styles.belowEnvelopeGuest}
+                dir={content.language === 'AR' || content.language === 'HE' ? 'rtl' : 'ltr'}
+              >
+                {content.guestName}
+              </p>
             )}
             {content.inviteLead && (
               <p

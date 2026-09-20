@@ -12,6 +12,11 @@ const envSchema = z.object({
   ADMIN_BOOTSTRAP_EMAIL: z.string().email().optional(),
   ADMIN_BOOTSTRAP_PASSWORD: z.string().min(8).optional(),
   OPEN_DEDUP_MINUTES: z.coerce.number().default(10),
+  CLOUDFLARE_ACCOUNT_ID: z.string().optional(),
+  R2_ACCESS_KEY_ID: z.string().optional(),
+  R2_SECRET_ACCESS_KEY: z.string().optional(),
+  R2_BUCKET_NAME: z.string().default('engagement-memories'),
+  R2_ENDPOINT: z.string().optional(),
 })
 
 const parsed = envSchema.safeParse(process.env)
@@ -34,4 +39,5 @@ export const env = parsed.success
       CORS_ORIGIN: 'http://localhost:5173',
       PUBLIC_APP_URL: 'http://localhost:5173',
       OPEN_DEDUP_MINUTES: 10,
+      R2_BUCKET_NAME: 'engagement-memories',
     })

@@ -9,6 +9,8 @@ import { invitationsRouter } from './routes/invitations.js'
 import { authRouter } from './routes/auth.js'
 import { adminRouter } from './routes/admin.js'
 import { uploadsDir, uploadsRouter } from './routes/uploads.js'
+import { mediaGuestRouter } from './memories/guestRoutes.js'
+import { memoriesAdminRouter } from './memories/adminRoutes.js'
 
 export function createApp() {
   const app = express()
@@ -53,7 +55,9 @@ export function createApp() {
   app.use('/api/admin/auth/login', authLimiter)
   app.use('/api/admin/auth', authRouter)
   app.use('/api/admin/uploads', uploadsRouter)
+  app.use('/api/admin/memories', memoriesAdminRouter)
   app.use('/api/admin', adminRouter)
+  app.use('/api/media', mediaGuestRouter)
   app.use('/api/invitations/:token/rsvp', rsvpLimiter)
   app.use('/api/invitations', publicLimiter, invitationsRouter)
 

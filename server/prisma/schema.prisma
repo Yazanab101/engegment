@@ -108,9 +108,15 @@ model Event {
   ticketHeadingHe       String?
   imageCoupleColor      String?
   imageCoupleBw         String?
+  uploadsOpen           Boolean   @default(true)
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
   guests                Guest[]
+  memoryGuests          MemoryGuest[]
+  memorySessions        MemoryUploadSession[]
+  memoryMedia           MemoryMedia[]
+  memoryMessages        MemoryMessage[]
+  stories               EventStory[]
 }
 
 model Guest {
@@ -118,12 +124,17 @@ model Guest {
   eventId           String
   event             Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
   fullName          String
+  titleKey          String?
+  includeFamily     Boolean          @default(false)
+  familySuffixKey   String?
   phoneNumber       String?
   email             String?
-  language          Language         @default(EN)
+  language          Language         @default(AR)
   inviteToken       String           @unique
   isActive          Boolean          @default(true)
-  maxGuestsAllowed  Int              @default(1)
+  inviteSent        Boolean          @default(false)
+  inviteSentAt      DateTime?
+  maxGuestsAllowed  Int              @default(50)
   invitationStatus  InvitationStatus @default(CREATED)
   firstOpenedAt     DateTime?
   lastOpenedAt      DateTime?
@@ -151,6 +162,7 @@ model Rsvp {
   status      RsvpStatus @default(PENDING)
   guestCount  Int        @default(0)
   message     String?
+  setByAdmin  Boolean    @default(false)
   submittedAt DateTime?
   updatedAt   DateTime   @updatedAt
   createdAt   DateTime   @default(now())
@@ -166,4 +178,118 @@ model InvitationEvent {
 
   @@index([guestId, type, createdAt])
   @@index([createdAt])
+}
+
+model MemoryGuest {
+  id          String   @id @default(uuid())
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  displayName String
+  deviceToken String   @unique
+  tableLabel  String?
+  lastSeenAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  sessions    MemoryUploadSession[]
+  media       MemoryMedia[]
+  messages    MemoryMessage[]
+  storyViews  StoryView[]
+
+  @@index([eventId, displayName])
+  @@index([eventId, lastSeenAt])
+}
+
+model MemoryUploadSession {
+  id         String   @id @default(uuid())
+  eventId    String
+  guestId    String
+  tableLabel String?
+  createdAt  DateTime @default(now())
+  event      Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guest      MemoryGuest @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  media      MemoryMedia[]
+
+  @@index([eventId, guestId])
+}
+
+model MemoryMedia {
+  id                 String    @id @default(uuid())
+  eventId            String
+  guestId            String
+  uploadSessionId    String
+  clientUploadId     String    @unique
+  storageProvider    String    @default("r2")
+  objectKey          String    @unique
+  thumbnailObjectKey String?
+  originalFilename   String
+  mimeType           String
+  fileSize           Int
+  mediaType          String
+  width              Int?
+  height             Int?
+  duration           Float?
+  caption            String?
+  status             String    @default("pending")
+  isFavorite         Boolean   @default(false)
+  isHidden           Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  confirmedAt        DateTime?
+  event              Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guest              MemoryGuest @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  session            MemoryUploadSession @relation(fields: [uploadSessionId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, createdAt])
+  @@index([eventId, guestId, createdAt])
+  @@index([eventId, mediaType, createdAt])
+  @@index([eventId, isFavorite, createdAt])
+  @@index([uploadSessionId])
+}
+
+model MemoryMessage {
+  id         String   @id @default(uuid())
+  eventId    String
+  guestId    String
+  message    String
+  isFavorite Boolean  @default(false)
+  isArchived Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  event      Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guest      MemoryGuest @relation(fields: [guestId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, createdAt])
+  @@index([eventId, guestId, createdAt])
+}
+
+model EventStory {
+  id                 String      @id @default(uuid())
+  eventId            String
+  mediaType          String
+  objectKey          String      @unique
+  thumbnailObjectKey String?
+  mimeType           String?
+  fileSize           Int         @default(0)
+  duration           Float?
+  sortOrder          Int         @default(0)
+  isActive           Boolean     @default(false)
+  status             String      @default("pending")
+  startsAt           DateTime?
+  expiresAt          DateTime?
+  createdAt          DateTime    @default(now())
+  createdBy          String?
+  event              Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  views              StoryView[]
+
+  @@index([eventId, sortOrder, createdAt])
+  @@index([eventId, isActive, status])
+}
+
+model StoryView {
+  id       String       @id @default(uuid())
+  storyId  String
+  guestId  String?
+  deviceId String?
+  viewedAt DateTime     @default(now())
+  story    EventStory   @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  guest    MemoryGuest? @relation(fields: [guestId], references: [id], onDelete: SetNull)
+
+  @@index([storyId])
 }

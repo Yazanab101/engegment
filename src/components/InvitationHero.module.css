@@ -1,6 +1,8 @@
 .page {
   min-height: 100dvh;
   width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
   background: var(--white);
   display: flex;
   align-items: center;
@@ -10,7 +12,8 @@
 
 .canvas {
   position: relative;
-  width: min(94vw, 920px);
+  width: 100%;
+  max-width: 920px;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -18,14 +21,17 @@
   justify-content: flex-start;
   gap: clamp(1.25rem, 4vh, 2.25rem);
   background: var(--white);
-  overflow: visible;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 .envelopeWrap {
   position: relative;
-  width: min(88vw, 480px);
+  width: 100%;
+  max-width: 480px;
   padding-top: clamp(2.75rem, 20cqw, 5.5rem);
-  overflow: visible;
+  overflow-x: clip;
+  overflow-y: visible;
   container-type: inline-size;
   container-name: collage;
 }
@@ -33,7 +39,8 @@
 .envelopeStack {
   position: relative;
   width: 100%;
-  overflow: visible;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 .envelopeScale {
@@ -341,13 +348,15 @@
 }
 
 .belowEnvelope {
-  width: min(88vw, 480px);
+  width: 100%;
+  max-width: 480px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   gap: clamp(0.45rem, 2cqw, 0.75rem);
   padding: 0 clamp(0.5rem, 2vw, 1rem);
+  box-sizing: border-box;
 }
 
 .belowEnvelopeNames {
@@ -358,7 +367,9 @@
   letter-spacing: 0.34em;
   text-transform: uppercase;
   color: #29120b;
-  white-space: nowrap;
+  white-space: normal;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   line-height: 1.15;
 }
 
@@ -554,18 +565,20 @@
 /* ── Viewport breakpoints ── */
 @media (max-width: 480px) {
   .page {
-    padding: clamp(2.5rem, 9vh, 4rem) clamp(0.75rem, 3vw, 1.25rem) clamp(1.5rem, 5vh, 2rem);
+    padding: clamp(2.5rem, 9vh, 4rem) clamp(0.85rem, 4vw, 1.25rem) clamp(1.5rem, 5vh, 2rem);
     align-items: flex-start;
   }
 
   .canvas {
     width: 100%;
     min-height: 0;
-    overflow: visible;
+    overflow-x: clip;
+    overflow-y: visible;
   }
 
   .envelopeWrap {
-    width: min(92vw, 480px);
+    width: 100%;
+    max-width: 480px;
     padding-top: clamp(2.25rem, 22cqw, 4.5rem);
   }
 
@@ -577,7 +590,8 @@
 
 @media (min-width: 481px) and (max-width: 767px) {
   .envelopeWrap {
-    width: min(72vw, 480px);
+    width: 100%;
+    max-width: 480px;
   }
 
   .envelopeScale {
@@ -588,7 +602,8 @@
 
 @media (min-width: 768px) {
   .envelopeWrap {
-    width: min(62vw, 480px);
+    width: 100%;
+    max-width: 480px;
   }
 
   .envelopeScale {
@@ -599,6 +614,7 @@
 
 @media (min-width: 1200px) {
   .canvas {
-    width: min(92vw, 960px);
+    width: 100%;
+    max-width: 960px;
   }
 }

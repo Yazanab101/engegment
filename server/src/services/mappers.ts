@@ -1,5 +1,6 @@
 import type { Event, Guest, Language, Rsvp, RsvpStatus } from '@prisma/client'
 import { env } from '../config/env.js'
+import { composeGuestDisplayName } from '../lib/guestDisplayName.js'
 
 export type PublicGuest = {
   displayName: string
@@ -63,13 +64,21 @@ function pickLocalizedText(
 }
 
 export function toPublicGuest(guest: Guest & { rsvp: Rsvp | null }, event: Event): PublicGuest {
+  const rsvp = guest.rsvp
+  const hideFromGuest = Boolean(rsvp?.setByAdmin)
   return {
-    displayName: guest.fullName,
+    displayName: composeGuestDisplayName({
+      fullName: guest.fullName,
+      language: guest.language,
+      titleKey: guest.titleKey,
+      includeFamily: guest.includeFamily,
+      familySuffixKey: guest.familySuffixKey,
+    }),
     language: guest.language,
     maxGuestsAllowed: guest.maxGuestsAllowed,
-    rsvpStatus: guest.rsvp?.status ?? 'PENDING',
-    attendingGuestCount: guest.rsvp?.guestCount ?? 0,
-    message: guest.rsvp?.message ?? null,
+    rsvpStatus: hideFromGuest ? 'PENDING' : (rsvp?.status ?? 'PENDING'),
+    attendingGuestCount: hideFromGuest ? 0 : (rsvp?.guestCount ?? 0),
+    message: hideFromGuest ? null : (rsvp?.message ?? null),
     tableNumber: event.showTableAssignments ? guest.tableNumber : null,
   }
 }

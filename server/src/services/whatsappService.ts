@@ -7,10 +7,10 @@ export function buildWhatsAppInviteMessage(params: {
 }): string {
   const { language, fullName, inviteUrl } = params
   if (language === 'AR') {
-    return `عزيزي/عزيزتي ${fullName}،\nيسعدنا أن تشاركونا يومنا المميز ❤️\nدعوتكم الشخصية:\n${inviteUrl}`
+    return `${fullName}،\nيسعدنا أن تشاركونا فرحة خطوبتنا\nدعوتكم الشخصية:\n${inviteUrl}`
   }
   if (language === 'HE') {
-    return `${fullName} היקר/ה,\nנשמח מאוד שתהיו איתנו ביום המיוחד שלנו ❤️\nההזמנה האישית שלכם:\n${inviteUrl}`
+    return `${fullName} היקר/ה,\nנשמח מאוד שתהיו איתנו ביום המיוחד שלנו\nההזמנה האישית שלכם:\n${inviteUrl}`
   }
   return `Dear ${fullName},\nWe would be delighted to celebrate this special day with you.\nYour personal invitation:\n${inviteUrl}`
 }

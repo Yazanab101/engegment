@@ -6,6 +6,9 @@ import { AdminLayout } from './components/AdminLayout'
 import { DashboardPage } from './pages/DashboardPage'
 import { GuestsPage } from './pages/GuestsPage'
 import { EventSettingsPage } from './pages/EventSettingsPage'
+import { MemoriesPage } from './pages/MemoriesPage'
+import { MemoriesGuestPage } from './pages/MemoriesGuestPage'
+import { StoriesPage } from './pages/StoriesPage'
 import './styles/admin.css'
 
 export function AdminApp() {
@@ -42,6 +45,9 @@ export function AdminApp() {
         <Route index element={<DashboardPage />} />
         <Route path="guests" element={<GuestsPage />} />
         <Route path="settings" element={<EventSettingsPage />} />
+        <Route path="memories" element={<MemoriesPage />} />
+        <Route path="memories/stories" element={<StoriesPage />} />
+        <Route path="memories/guest/:guestId" element={<MemoriesGuestPage />} />
         <Route path="login" element={<Navigate to="/admin" replace />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Routes>

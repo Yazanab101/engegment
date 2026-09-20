@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Rsvp" ADD COLUMN "setByAdmin" BOOLEAN NOT NULL DEFAULT false;

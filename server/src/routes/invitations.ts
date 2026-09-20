@@ -44,10 +44,11 @@ invitationsRouter.get(
   '/:token/rsvp',
   asyncHandler(async (req, res) => {
     const guest = await requireActiveGuestByToken(String(req.params.token))
+    const hideFromGuest = Boolean(guest.rsvp?.setByAdmin)
     res.json({
-      status: guest.rsvp?.status ?? 'PENDING',
-      guestCount: guest.rsvp?.guestCount ?? 0,
-      message: guest.rsvp?.message ?? null,
+      status: hideFromGuest ? 'PENDING' : (guest.rsvp?.status ?? 'PENDING'),
+      guestCount: hideFromGuest ? 0 : (guest.rsvp?.guestCount ?? 0),
+      message: hideFromGuest ? null : (guest.rsvp?.message ?? null),
       maxGuestsAllowed: guest.maxGuestsAllowed,
       rsvpClosed: guest.event.rsvpDeadline
         ? guest.event.rsvpDeadline.getTime() < Date.now()

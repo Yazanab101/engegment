@@ -22,6 +22,7 @@ import { buildWhatsAppInviteMessage, whatsappShareUrl } from '../services/whatsa
 import { invitationPublicUrl } from '../lib/tokens.js'
 import { env } from '../config/env.js'
 import { getCurrentEvent } from '../services/invitationService.js'
+import { composeGuestDisplayName } from '../lib/guestDisplayName.js'
 
 export const adminRouter = Router()
 adminRouter.use(requireAdmin)
@@ -35,8 +36,23 @@ const guestTagSchema = z.enum([
   'VIP',
 ])
 
+const titleKeySchema = z.enum(['mr', 'mrs', 'miss', 'ms', 'mr_mrs', 'none'])
+const familySuffixKeySchema = z.enum([
+  'his_family',
+  'her_family',
+  'their_family',
+  'the_family',
+  'and_family',
+  'amp_family',
+  'and_their_family',
+  'none',
+])
+
 const guestBodySchema = z.object({
   fullName: z.string().min(1).max(200),
+  titleKey: titleKeySchema.nullable().optional(),
+  includeFamily: z.boolean().optional(),
+  familySuffixKey: familySuffixKeySchema.nullable().optional(),
   phoneNumber: z.string().max(40).optional().nullable(),
   email: z.string().email().optional().nullable().or(z.literal('')).transform((v) => v || null),
   language: z.enum(['AR', 'HE', 'EN']),
@@ -45,6 +61,7 @@ const guestBodySchema = z.object({
   tags: z.array(guestTagSchema).optional(),
   tableNumber: z.string().max(40).optional().nullable(),
   isActive: z.boolean().optional(),
+  inviteSent: z.boolean().optional(),
 })
 
 adminRouter.get(
@@ -70,11 +87,46 @@ adminRouter.get(
             'attending',
             'not_attending',
             'pending',
+            'invite_sent',
+            'invite_not_sent',
+            'groom_family',
+            'bride_family',
             'ar',
             'he',
             'en',
           ])
           .optional(),
+        filters: z
+          .union([z.string(), z.array(z.string())])
+          .optional()
+          .transform((value) => {
+            if (!value) return undefined
+            const parts = Array.isArray(value)
+              ? value.flatMap((v) => v.split(','))
+              : value.split(',')
+            return parts.map((p) => p.trim()).filter(Boolean)
+          })
+          .pipe(
+            z
+              .array(
+                z.enum([
+                  'all',
+                  'opened',
+                  'not_opened',
+                  'attending',
+                  'not_attending',
+                  'pending',
+                  'invite_sent',
+                  'invite_not_sent',
+                  'groom_family',
+                  'bride_family',
+                  'ar',
+                  'he',
+                  'en',
+                ]),
+              )
+              .optional(),
+          ),
         language: z.enum(['AR', 'HE', 'EN']).optional(),
         sortBy: z.enum(['fullName', 'createdAt', 'lastOpenedAt', 'openCount']).optional(),
         sortDir: z.enum(['asc', 'desc']).optional(),
@@ -140,6 +192,13 @@ adminRouter.get(
     if (!guest) throw new AppError(404, 'Guest not found')
     res.json({
       ...guest,
+      displayName: composeGuestDisplayName({
+        fullName: guest.fullName,
+        language: guest.language,
+        titleKey: guest.titleKey,
+        includeFamily: guest.includeFamily,
+        familySuffixKey: guest.familySuffixKey,
+      }),
       inviteUrl: invitationPublicUrl(guest.inviteToken, env.PUBLIC_APP_URL),
     })
   }),
@@ -189,10 +248,22 @@ adminRouter.get(
   asyncHandler(async (req, res) => {
     const guest = await prisma.guest.findUnique({ where: { id: String(req.params.id) } })
     if (!guest) throw new AppError(404, 'Guest not found')
+    if (!guest.inviteSent) {
+      await prisma.guest.update({
+        where: { id: guest.id },
+        data: { inviteSent: true, inviteSentAt: new Date() },
+      })
+    }
     const inviteUrl = invitationPublicUrl(guest.inviteToken, env.PUBLIC_APP_URL)
     const message = buildWhatsAppInviteMessage({
       language: guest.language,
-      fullName: guest.fullName,
+      fullName: composeGuestDisplayName({
+        fullName: guest.fullName,
+        language: guest.language,
+        titleKey: guest.titleKey,
+        includeFamily: guest.includeFamily,
+        familySuffixKey: guest.familySuffixKey,
+      }),
       inviteUrl,
     })
     res.json({

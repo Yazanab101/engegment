@@ -7,7 +7,7 @@ const rowSchema = z.object({
   name: z.string().min(1),
   phone: z.string().optional().nullable(),
   email: z.string().email().optional().nullable().or(z.literal('')),
-  language: z.enum(['AR', 'HE', 'EN', 'ar', 'he', 'en']).default('EN'),
+  language: z.enum(['AR', 'HE', 'EN', 'ar', 'he', 'en']).default('AR'),
   maxGuestsAllowed: z.coerce.number().int().min(1).max(50).default(1),
   notes: z.string().optional().nullable(),
 })
@@ -50,7 +50,7 @@ export async function importGuestsFromCsv(csvText: string): Promise<ImportResult
       name: raw.name ?? raw.fullName ?? raw.Name ?? '',
       phone: raw.phone ?? raw.phoneNumber ?? '',
       email: raw.email ?? '',
-      language: raw.language ?? 'EN',
+      language: raw.language ?? 'HE',
       maxGuestsAllowed: raw.maxGuestsAllowed ?? raw.max_guests ?? '1',
       notes: raw.notes ?? '',
     }

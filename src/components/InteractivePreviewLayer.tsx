@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { assets } from '../data/invitation'
 import { useInvitation } from '../invitation/InvitationContext'
@@ -133,6 +133,10 @@ function PreviewContent({ id }: { id: PreviewItemId }) {
 }
 
 export function InteractivePreviewLayer({ selectedItem, onClose }: InteractivePreviewLayerProps) {
+  const lastItemRef = useRef<PreviewItemId | null>(selectedItem)
+  if (selectedItem) lastItemRef.current = selectedItem
+  const closingTicket = lastItemRef.current === 'goldTicket'
+
   useEffect(() => {
     if (!selectedItem) return
 
@@ -150,39 +154,59 @@ export function InteractivePreviewLayer({ selectedItem, onClose }: InteractivePr
     }
   }, [selectedItem, onClose])
 
+  const ticketSnap = { type: 'tween' as const, duration: 0, delay: 0 }
+
   return (
     <AnimatePresence>
       {selectedItem && (
-        <>
+        <motion.div key={selectedItem} className={styles.previewRoot}>
           <motion.button
             type="button"
-            className={styles.backdrop}
+            className={`${styles.backdrop} ${selectedItem === 'goldTicket' ? styles.backdropTicket : ''}`}
             aria-label="Close preview"
-            initial={{ opacity: 0 }}
+            initial={selectedItem === 'goldTicket' ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.45, ease: previewEase }}
+            transition={
+              selectedItem === 'goldTicket' || closingTicket
+                ? ticketSnap
+                : { duration: 0.15, ease: previewEase }
+            }
             onClick={onClose}
           />
 
           <div className={styles.overlay} aria-modal="true" role="dialog">
             <motion.div
-              layoutId={previewLayoutId(selectedItem)}
+              layoutId={
+                selectedItem === 'goldTicket' ? undefined : previewLayoutId(selectedItem)
+              }
               className={styles.previewFrame}
-              transition={previewTransition}
+              transition={selectedItem === 'goldTicket' ? ticketSnap : previewTransition}
               onClick={(event) => event.stopPropagation()}
             >
               <motion.div
-                initial={{ opacity: 0, scale: 0.85 }}
+                initial={
+                  selectedItem === 'goldTicket'
+                    ? false
+                    : { opacity: 0, scale: 0.92 }
+                }
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.85 }}
-                transition={previewTransition}
+                exit={
+                  selectedItem === 'goldTicket' || closingTicket
+                    ? { opacity: 0 }
+                    : { opacity: 0, scale: 0.92 }
+                }
+                transition={
+                  selectedItem === 'goldTicket' || closingTicket
+                    ? ticketSnap
+                    : previewTransition
+                }
               >
                 <PreviewContent id={selectedItem} />
               </motion.div>
             </motion.div>
           </div>
-        </>
+        </motion.div>
       )}
     </AnimatePresence>
   )
@@ -209,7 +233,7 @@ export function PreviewTarget({
 
   return (
     <motion.div
-      layoutId={previewLayoutId(id)}
+      layoutId={id === 'goldTicket' ? undefined : previewLayoutId(id)}
       className={className}
       role="button"
       tabIndex={0}
@@ -231,7 +255,7 @@ export function PreviewTarget({
         cursor: isSelected ? 'default' : 'pointer',
         opacity: isSelected ? 0 : 1,
       }}
-      transition={previewTransition}
+      transition={id === 'goldTicket' ? { duration: 0 } : previewTransition}
       whileTap={{ scale: isSelected ? 1 : 0.98 }}
     >
       {children}

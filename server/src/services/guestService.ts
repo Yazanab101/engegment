@@ -5,22 +5,30 @@ import { generateInviteToken, invitationPublicUrl } from '../lib/tokens.js'
 import { env } from '../config/env.js'
 import { getCurrentEvent } from './invitationService.js'
 import { escapeCsvCell } from '../lib/sanitize.js'
+import { composeGuestDisplayName } from '../lib/guestDisplayName.js'
+
+export type GuestFilterValue =
+  | 'all'
+  | 'opened'
+  | 'not_opened'
+  | 'attending'
+  | 'not_attending'
+  | 'pending'
+  | 'invite_sent'
+  | 'invite_not_sent'
+  | 'groom_family'
+  | 'bride_family'
+  | 'ar'
+  | 'he'
+  | 'en'
 
 export type GuestListQuery = {
   page?: number
   pageSize?: number
   search?: string
   language?: Language
-  filter?:
-    | 'all'
-    | 'opened'
-    | 'not_opened'
-    | 'attending'
-    | 'not_attending'
-    | 'pending'
-    | 'ar'
-    | 'he'
-    | 'en'
+  filter?: GuestFilterValue
+  filters?: GuestFilterValue[]
   sortBy?: 'fullName' | 'createdAt' | 'lastOpenedAt' | 'openCount'
   sortDir?: 'asc' | 'desc'
 }
@@ -53,6 +61,44 @@ export async function getDashboardStats() {
     .filter((g) => g.rsvp?.status === 'ATTENDING')
     .reduce((sum, g) => sum + (g.rsvp?.guestCount ?? 0), 0)
 
+  function guestSide(tags: string[]): 'groom' | 'bride' | 'none' {
+    if (tags.includes('GROOM_FAMILY')) return 'groom'
+    if (tags.includes('BRIDE_FAMILY')) return 'bride'
+    return 'none'
+  }
+
+  const attendingGuests = guests
+    .filter((g) => g.rsvp?.status === 'ATTENDING')
+    .map((g) => {
+      const side = guestSide(g.tags)
+      return {
+        id: g.id,
+        name: composeGuestDisplayName({
+          fullName: g.fullName,
+          language: g.language,
+          titleKey: g.titleKey,
+          includeFamily: g.includeFamily,
+          familySuffixKey: g.familySuffixKey,
+        }),
+        side,
+        sideLabel:
+          side === 'groom' ? 'أهل العريس' : side === 'bride' ? 'أهل العروس' : 'بدون تعيين',
+        guestCount: g.rsvp?.guestCount ?? 0,
+        language: g.language,
+      }
+    })
+    .sort((a, b) => b.guestCount - a.guestCount || a.name.localeCompare(b.name, 'ar'))
+
+  const bySide = (['groom', 'bride', 'none'] as const).map((side) => {
+    const subset = attendingGuests.filter((g) => g.side === side)
+    return {
+      side,
+      label: side === 'groom' ? 'أهل العريس' : side === 'bride' ? 'أهل العروس' : 'بدون تعيين',
+      invitations: subset.length,
+      peopleAttending: subset.reduce((sum, g) => sum + g.guestCount, 0),
+    }
+  })
+
   const byLanguage = (['EN', 'AR', 'HE'] as Language[]).map((lang) => {
     const subset = guests.filter((g) => g.language === lang)
     return {
@@ -81,6 +127,8 @@ export async function getDashboardStats() {
     openRate,
     rsvpRate,
     byLanguage,
+    bySide,
+    attendingGuests,
   }
 }
 
@@ -104,20 +152,34 @@ export async function listGuests(query: GuestListQuery) {
     })
   }
 
-  const filter = query.filter ?? 'all'
-  if (filter === 'ar' || query.language === 'AR') and.push({ language: 'AR' })
-  if (filter === 'he' || query.language === 'HE') and.push({ language: 'HE' })
-  if (filter === 'en' || query.language === 'EN') and.push({ language: 'EN' })
-  if (filter === 'opened') {
-    and.push({ OR: [{ openCount: { gt: 0 } }, { firstOpenedAt: { not: null } }] })
+  const filterValues = (query.filters?.length
+    ? query.filters
+    : query.filter
+      ? [query.filter]
+      : []) as GuestFilterValue[]
+
+  const activeFilters = filterValues.filter((f) => f && f !== 'all')
+
+  for (const filter of activeFilters) {
+    if (filter === 'ar') and.push({ language: 'AR' })
+    else if (filter === 'he') and.push({ language: 'HE' })
+    else if (filter === 'en') and.push({ language: 'EN' })
+    else if (filter === 'opened') {
+      and.push({ OR: [{ openCount: { gt: 0 } }, { firstOpenedAt: { not: null } }] })
+    } else if (filter === 'not_opened') {
+      and.push({ openCount: 0, firstOpenedAt: null })
+    } else if (filter === 'attending') and.push({ rsvp: { status: 'ATTENDING' } })
+    else if (filter === 'not_attending') and.push({ rsvp: { status: 'NOT_ATTENDING' } })
+    else if (filter === 'pending') {
+      and.push({ OR: [{ rsvp: null }, { rsvp: { status: 'PENDING' } }] })
+    } else if (filter === 'invite_sent') and.push({ inviteSent: true })
+    else if (filter === 'invite_not_sent') and.push({ inviteSent: false })
+    else if (filter === 'groom_family') and.push({ tags: { has: 'GROOM_FAMILY' } })
+    else if (filter === 'bride_family') and.push({ tags: { has: 'BRIDE_FAMILY' } })
   }
-  if (filter === 'not_opened') {
-    and.push({ openCount: 0, firstOpenedAt: null })
-  }
-  if (filter === 'attending') and.push({ rsvp: { status: 'ATTENDING' } })
-  if (filter === 'not_attending') and.push({ rsvp: { status: 'NOT_ATTENDING' } })
-  if (filter === 'pending') {
-    and.push({ OR: [{ rsvp: null }, { rsvp: { status: 'PENDING' } }] })
+
+  if (query.language) {
+    and.push({ language: query.language })
   }
 
   const where: Prisma.GuestWhereInput = { AND: and }
@@ -140,12 +202,24 @@ export async function listGuests(query: GuestListQuery) {
     items: rows.map((g) => ({
       id: g.id,
       fullName: g.fullName,
+      titleKey: g.titleKey,
+      includeFamily: g.includeFamily,
+      familySuffixKey: g.familySuffixKey,
+      displayName: composeGuestDisplayName({
+        fullName: g.fullName,
+        language: g.language,
+        titleKey: g.titleKey,
+        includeFamily: g.includeFamily,
+        familySuffixKey: g.familySuffixKey,
+      }),
       phoneNumber: g.phoneNumber,
       email: g.email,
       language: g.language,
       inviteToken: g.inviteToken,
       inviteUrl: invitationPublicUrl(g.inviteToken, env.PUBLIC_APP_URL),
       isActive: g.isActive,
+      inviteSent: g.inviteSent,
+      inviteSentAt: g.inviteSentAt,
       maxGuestsAllowed: g.maxGuestsAllowed,
       invitationStatus: g.invitationStatus,
       displayStatus: deriveDisplayStatus(g),
@@ -167,6 +241,9 @@ export async function listGuests(query: GuestListQuery) {
 
 export async function createGuest(input: {
   fullName: string
+  titleKey?: string | null
+  includeFamily?: boolean
+  familySuffixKey?: string | null
   phoneNumber?: string | null
   email?: string | null
   language: Language
@@ -180,10 +257,14 @@ export async function createGuest(input: {
     throw new AppError(400, 'maxGuestsAllowed must be between 1 and 50')
   }
 
+  const includeFamily = Boolean(input.includeFamily)
   return prisma.guest.create({
     data: {
       eventId: event.id,
       fullName: input.fullName.trim(),
+      titleKey: input.titleKey ?? 'none',
+      includeFamily,
+      familySuffixKey: includeFamily ? (input.familySuffixKey ?? 'none') : null,
       phoneNumber: input.phoneNumber?.trim() || null,
       email: input.email?.trim() || null,
       language: input.language,
@@ -202,6 +283,9 @@ export async function updateGuest(
   id: string,
   input: Partial<{
     fullName: string
+    titleKey: string | null
+    includeFamily: boolean
+    familySuffixKey: string | null
     phoneNumber: string | null
     email: string | null
     language: Language
@@ -210,6 +294,7 @@ export async function updateGuest(
     tags: Guest['tags']
     tableNumber: string | null
     isActive: boolean
+    inviteSent: boolean
   }>,
 ) {
   const existing = await prisma.guest.findUnique({ where: { id } })
@@ -219,10 +304,34 @@ export async function updateGuest(
     throw new AppError(400, 'maxGuestsAllowed must be between 1 and 50')
   }
 
+  const includeFamily =
+    input.includeFamily !== undefined ? input.includeFamily : existing.includeFamily
+  const familySuffixKey =
+    input.includeFamily === false
+      ? null
+      : input.familySuffixKey !== undefined
+        ? input.familySuffixKey
+        : existing.familySuffixKey
+
+  const inviteSentData =
+    input.inviteSent === undefined
+      ? {}
+      : input.inviteSent
+        ? {
+            inviteSent: true,
+            inviteSentAt: existing.inviteSentAt ?? new Date(),
+          }
+        : { inviteSent: false, inviteSentAt: null }
+
   return prisma.guest.update({
     where: { id },
     data: {
       ...(input.fullName != null ? { fullName: input.fullName.trim() } : {}),
+      ...(input.titleKey !== undefined ? { titleKey: input.titleKey } : {}),
+      ...(input.includeFamily !== undefined ? { includeFamily: input.includeFamily } : {}),
+      ...(input.includeFamily !== undefined || input.familySuffixKey !== undefined
+        ? { familySuffixKey: includeFamily ? familySuffixKey : null }
+        : {}),
       ...(input.phoneNumber !== undefined ? { phoneNumber: input.phoneNumber?.trim() || null } : {}),
       ...(input.email !== undefined ? { email: input.email?.trim() || null } : {}),
       ...(input.language != null ? { language: input.language } : {}),
@@ -231,6 +340,7 @@ export async function updateGuest(
       ...(input.tags != null ? { tags: input.tags } : {}),
       ...(input.tableNumber !== undefined ? { tableNumber: input.tableNumber?.trim() || null } : {}),
       ...(input.isActive != null ? { isActive: input.isActive } : {}),
+      ...inviteSentData,
     },
     include: { rsvp: true },
   })
@@ -263,9 +373,14 @@ export async function exportGuestsCsv() {
   const { items } = await listGuests({ page: 1, pageSize: 10000, sortBy: 'fullName', sortDir: 'asc' })
   const header = [
     'fullName',
+    'displayName',
+    'titleKey',
+    'includeFamily',
+    'familySuffixKey',
     'phoneNumber',
     'email',
     'language',
+    'inviteSent',
     'maxGuestsAllowed',
     'inviteUrl',
     'isActive',
@@ -286,9 +401,14 @@ export async function exportGuestsCsv() {
     lines.push(
       [
         escapeCsvCell(g.fullName),
+        escapeCsvCell(g.displayName),
+        escapeCsvCell(g.titleKey),
+        escapeCsvCell(g.includeFamily ? 'yes' : 'no'),
+        escapeCsvCell(g.familySuffixKey),
         escapeCsvCell(g.phoneNumber),
         escapeCsvCell(g.email),
         escapeCsvCell(g.language),
+        escapeCsvCell(g.inviteSent ? 'yes' : 'no'),
         escapeCsvCell(g.maxGuestsAllowed),
         escapeCsvCell(g.inviteUrl),
         escapeCsvCell(g.isActive ? 'yes' : 'no'),
@@ -314,6 +434,7 @@ export async function exportRsvpCsv() {
   const responded = items.filter((g) => g.rsvpStatus !== 'PENDING')
   const header = [
     'fullName',
+    'displayName',
     'language',
     'rsvpStatus',
     'attendingGuestCount',
@@ -326,6 +447,7 @@ export async function exportRsvpCsv() {
     lines.push(
       [
         escapeCsvCell(g.fullName),
+        escapeCsvCell(g.displayName),
         escapeCsvCell(g.language),
         escapeCsvCell(g.rsvpStatus),
         escapeCsvCell(g.attendingGuestCount),

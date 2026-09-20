@@ -10,7 +10,7 @@ export const previewEase = [0.22, 1, 0.36, 1] as const
 
 export const previewTransition: Transition = {
   type: 'tween',
-  duration: 0.55,
+  duration: 0.2,
   ease: previewEase,
 }
 

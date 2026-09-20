@@ -131,6 +131,75 @@ export const api = {
     request('/api/admin/events/current', { method: 'PATCH', body: JSON.stringify(body) }),
   setGuestRsvp: (id: string, body: unknown) =>
     request(`/api/admin/guests/${id}/rsvp`, { method: 'POST', body: JSON.stringify(body) }),
+  memoriesOverview: () => request<MemoriesOverview>('/api/admin/memories/overview'),
+  memoriesGuests: (params: URLSearchParams) =>
+    request<MemoriesGuest[]>('/api/admin/memories/guests?' + params.toString()),
+  memoriesGuest: (id: string) => request<MemoriesGuest>('/api/admin/memories/guests/' + id),
+  memoriesGuestDownloadUrls: (id: string) =>
+    request<MemoriesDownloadItem[]>('/api/admin/memories/guests/' + id + '/download-urls'),
+  memoriesMedia: (params: URLSearchParams) =>
+    request<MemoriesMediaPage>('/api/admin/memories/media?' + params.toString()),
+  memoriesMediaAction: (ids: string[], action: MemoriesMediaAction) =>
+    request('/api/admin/memories/media/action', {
+      method: 'POST',
+      body: JSON.stringify({ ids, action }),
+    }),
+  memoriesSignedUrl: (id: string) =>
+    request<{ url: string }>('/api/admin/memories/media/' + id + '/signed-url', {
+      method: 'POST',
+      body: '{}',
+    }),
+  memoriesMessages: (archived = false, guestId?: string) =>
+    request<MemoriesMessage[]>(
+      '/api/admin/memories/messages?archived=' +
+        String(archived) +
+        (guestId ? '&guestId=' + encodeURIComponent(guestId) : ''),
+    ),
+  memoriesMessageAction: (id: string, action: MemoriesMessageAction) =>
+    request('/api/admin/memories/messages/' + id + '/action', {
+      method: 'POST',
+      body: JSON.stringify({ action }),
+    }),
+  memoriesSetUploadsOpen: (open: boolean) =>
+    request<{ uploadsOpen: boolean }>('/api/admin/memories/uploads-open', {
+      method: 'POST',
+      body: JSON.stringify({ open }),
+    }),
+  listStories: () => request<AdminStory[]>('/api/admin/memories/stories'),
+  authorizeStory: (body: unknown) =>
+    request<{
+      storyId: string
+      objectKey: string
+      thumbnailObjectKey: string | null
+      signedUploadUrl: string
+      signedThumbUrl: string | null
+      expiresAt: string
+      intendedActive: boolean
+    }>('/api/admin/memories/stories/authorize', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  confirmStory: (body: unknown) =>
+    request<{ ok: boolean; storyId: string }>('/api/admin/memories/stories/confirm', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  updateStory: (id: string, body: unknown) =>
+    request(`/api/admin/memories/stories/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+  reorderStories: (storyIds: string[]) =>
+    request('/api/admin/memories/stories/reorder', {
+      method: 'POST',
+      body: JSON.stringify({ storyIds }),
+    }),
+  deleteStory: (id: string) => request(`/api/admin/memories/stories/${id}`, { method: 'DELETE' }),
+  storySignedUrl: (id: string) =>
+    request<{ url: string; thumbUrl: string | null; mediaType: 'photo' | 'video'; expiresIn: number }>(
+      `/api/admin/memories/stories/${id}/signed-url`,
+      { method: 'POST', body: '{}' },
+    ),
   uploadImage: async (file: File) => {
     const form = new FormData()
     form.append('file', file)
@@ -148,15 +217,102 @@ export const api = {
   },
 }
 
+export type MemoriesOverview = {
+  event: { id: string; coupleNames: string; eventDate: string; uploadsOpen: boolean }
+  guests: number
+  photos: number
+  videos: number
+  messages: number
+  storageBytes: number
+  recentActivity: { id: string; kind: string; guestName: string; createdAt: string }[]
+}
+
+export type MemoriesGuest = {
+  id: string
+  name: string
+  table: string | null
+  photos: number
+  videos: number
+  messages: number
+  sessions: number
+  firstUpload: string | null
+  lastUpload: string | null
+  lastSeenAt: string
+  createdAt: string
+  latestThumb?: { type: string; mediaId?: string; thumbUrl: string | null; url: string | null } | null
+}
+
+export type MemoriesDownloadItem = {
+  id: string
+  type: string
+  filename: string
+  url: string
+}
+
+export type MemoriesMediaPage = {
+  items: {
+    id: string
+    type: string
+    guestName: string
+    guestId: string
+    caption: string | null
+    createdAt: string
+    isFavorite: boolean
+    isHidden: boolean
+    fileSize: number
+    thumbUrl: string | null
+    url: string | null
+  }[]
+  page: number
+  pageSize: number
+  total: number
+  hasMore: boolean
+}
+
+export type MemoriesMessage = {
+  id: string
+  guestName: string
+  message: string
+  createdAt: string
+  isFavorite: boolean
+  isArchived: boolean
+}
+
+export type MemoriesMediaAction = 'favorite' | 'unfavorite' | 'hide' | 'unhide' | 'delete'
+export type MemoriesMessageAction = 'favorite' | 'unfavorite' | 'archive' | 'unarchive' | 'delete'
+
+export type AdminStory = {
+  id: string
+  mediaType: 'photo' | 'video'
+  duration: number
+  configuredDuration: number | null
+  sortOrder: number
+  isActive: boolean
+  status: string
+  startsAt: string | null
+  expiresAt: string | null
+  createdAt: string
+  fileSize: number
+  thumbUrl: string | null
+  views: number
+  uniqueViewers: number
+}
+
 export type AdminGuest = {
   id: string
   fullName: string
+  titleKey: string | null
+  includeFamily: boolean
+  familySuffixKey: string | null
+  displayName: string
   phoneNumber: string | null
   email: string | null
   language: Language
   inviteToken: string
   inviteUrl: string
   isActive: boolean
+  inviteSent: boolean
+  inviteSentAt: string | null
   maxGuestsAllowed: number
   invitationStatus: string
   displayStatus: string
