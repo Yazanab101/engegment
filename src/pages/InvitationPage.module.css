@@ -2,9 +2,43 @@
   min-height: 100dvh;
   display: grid;
   place-items: center;
+  place-content: center;
+  gap: 0.65rem;
   padding: 2rem;
   background: var(--ivory, #f7f1e8);
   color: rgb(41, 18, 11);
   font-family: var(--font-luxury-serif, Georgia, serif);
   text-align: center;
+}
+
+.hint {
+  margin: 0;
+  opacity: 0.7;
+  font-size: 0.95rem;
+}
+
+.retry {
+  margin-top: 0.75rem;
+  border: 1px solid rgba(41, 18, 11, 0.2);
+  border-radius: 999px;
+  padding: 0.65rem 1.2rem;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid rgba(41, 18, 11, 0.15);
+  border-top-color: rgb(41, 18, 11);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

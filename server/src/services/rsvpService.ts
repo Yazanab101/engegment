@@ -84,6 +84,7 @@ export async function submitRsvp(token: string, body: RsvpBody, options?: { allo
   await logGuestEvent(guest.id, eventType, {
     status: body.status,
     guestCount,
+    ...(message ? { message } : {}),
   })
 
   return rsvp

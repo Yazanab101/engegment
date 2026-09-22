@@ -19,7 +19,7 @@ invitationsRouter.get(
   '/:token',
   asyncHandler(async (req, res) => {
     const guest = await requireActiveGuestByToken(String(req.params.token))
-    const inviteUrl = invitationPublicUrl(guest.inviteToken, env.PUBLIC_APP_URL)
+    const inviteUrl = invitationPublicUrl(guest.inviteToken, env.PUBLIC_APP_URL, guest.language)
     res.json({
       guest: toPublicGuest(guest, guest.event),
       event: toPublicEvent(guest.event, guest.language),
@@ -75,7 +75,7 @@ invitationsRouter.get(
   '/:token/calendar.ics',
   asyncHandler(async (req, res) => {
     const guest = await requireActiveGuestByToken(String(req.params.token))
-    const inviteUrl = invitationPublicUrl(guest.inviteToken, env.PUBLIC_APP_URL)
+    const inviteUrl = invitationPublicUrl(guest.inviteToken, env.PUBLIC_APP_URL, guest.language)
     const ics = buildIcs(guest.event, { url: inviteUrl })
     res.setHeader('Content-Type', 'text/calendar; charset=utf-8')
     res.setHeader('Content-Disposition', 'attachment; filename="invitation.ics"')
@@ -106,7 +106,7 @@ invitationsRouter.get(
   '/:token/qr.png',
   asyncHandler(async (req, res) => {
     const guest = await requireActiveGuestByToken(String(req.params.token))
-    const url = invitationPublicUrl(guest.inviteToken, env.PUBLIC_APP_URL)
+    const url = invitationPublicUrl(guest.inviteToken, env.PUBLIC_APP_URL, guest.language)
     const png = await QRCode.toBuffer(url, { type: 'png', width: 512, margin: 2 })
     res.setHeader('Content-Type', 'image/png')
     res.send(png)

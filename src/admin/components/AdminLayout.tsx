@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import type { ReactNode } from 'react'
+import { NotificationBell } from './NotificationBell'
 
 export function AdminLayout({
   children,
@@ -23,7 +24,12 @@ export function AdminLayout({
           Log out
         </button>
       </aside>
-      <main className="admin-main">{children}</main>
+      <div className="admin-content">
+        <header className="admin-topbar">
+          <NotificationBell />
+        </header>
+        <main className="admin-main">{children}</main>
+      </div>
     </div>
   )
 }

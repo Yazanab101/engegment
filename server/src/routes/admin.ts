@@ -14,6 +14,7 @@ import {
   regenerateInviteLink,
   updateGuest,
 } from '../services/guestService.js'
+import { listAdminNotifications } from '../services/notificationService.js'
 import { importGuestsFromCsv } from '../services/importService.js'
 import { adminSetRsvp } from '../services/rsvpService.js'
 import { prisma } from '../lib/prisma.js'
@@ -68,6 +69,18 @@ adminRouter.get(
   '/dashboard',
   asyncHandler(async (_req, res) => {
     res.json(await getDashboardStats())
+  }),
+)
+
+adminRouter.get(
+  '/notifications',
+  asyncHandler(async (req, res) => {
+    const query = z
+      .object({
+        limit: z.coerce.number().optional(),
+      })
+      .parse(req.query)
+    res.json(await listAdminNotifications(query.limit ?? 40))
   }),
 )
 
@@ -199,7 +212,7 @@ adminRouter.get(
         includeFamily: guest.includeFamily,
         familySuffixKey: guest.familySuffixKey,
       }),
-      inviteUrl: invitationPublicUrl(guest.inviteToken, env.PUBLIC_APP_URL),
+      inviteUrl: invitationPublicUrl(guest.inviteToken, env.PUBLIC_APP_URL, guest.language),
     })
   }),
 )
@@ -254,7 +267,7 @@ adminRouter.get(
         data: { inviteSent: true, inviteSentAt: new Date() },
       })
     }
-    const inviteUrl = invitationPublicUrl(guest.inviteToken, env.PUBLIC_APP_URL)
+    const inviteUrl = invitationPublicUrl(guest.inviteToken, env.PUBLIC_APP_URL, guest.language)
     const message = buildWhatsAppInviteMessage({
       language: guest.language,
       fullName: composeGuestDisplayName({
@@ -279,7 +292,7 @@ adminRouter.get(
   asyncHandler(async (req, res) => {
     const guest = await prisma.guest.findUnique({ where: { id: String(req.params.id) } })
     if (!guest) throw new AppError(404, 'Guest not found')
-    const url = invitationPublicUrl(guest.inviteToken, env.PUBLIC_APP_URL)
+    const url = invitationPublicUrl(guest.inviteToken, env.PUBLIC_APP_URL, guest.language)
     const png = await QRCode.toBuffer(url, { type: 'png', width: 512, margin: 2 })
     res.setHeader('Content-Type', 'image/png')
     res.send(png)

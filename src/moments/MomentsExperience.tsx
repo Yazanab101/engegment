@@ -21,18 +21,43 @@ import './moments.css'
 
 type Screen = 'landing' | 'upload' | 'success' | 'mine' | 'message' | 'messageSent'
 
-function arabicDate(iso: string) {
-  const [y, m, d] = iso.split('-')
-  return `${d} • ${m} • ${y}`
+function displayDate(iso: string) {
+  const match = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (match) return `${match[3]}/${match[2]}/${match[1]}`
+  return iso
 }
 
-function initialsFrom(names: string) {
-  return names
-    .split(/[&و]/)
-    .map((part) => part.trim().charAt(0))
+function coupleParts(names: string) {
+  const parts = names
+    .split(/\s*(?:&|و)\s*/g)
+    .map((part) => part.trim())
     .filter(Boolean)
-    .slice(0, 2)
-    .join(' · ')
+  const yazan = parts.find((part) => /يزن|yazan/i.test(part))
+  const nora = parts.find((part) => /نورا|nora/i.test(part))
+  if (yazan && nora) return [yazan, nora]
+  return parts.slice(0, 2)
+}
+
+function nameInitial(part: string) {
+  if (/يزن|yazan/i.test(part)) return 'Y'
+  if (/نورا|nora/i.test(part)) return 'N'
+  const latin = part.match(/[A-Za-z]/)
+  if (latin) return latin[0]!.toUpperCase()
+  return part.charAt(0) || ''
+}
+
+function coupleInitials(names: string) {
+  return coupleParts(names).map(nameInitial).filter(Boolean).slice(0, 2).join(' · ') || 'Y · N'
+}
+
+function engagementHeadline(names: string) {
+  const parts = coupleParts(names).map((part) => {
+    if (/يزن|yazan/i.test(part)) return 'يزن'
+    if (/نورا|nora/i.test(part)) return 'نورا'
+    return part
+  })
+  if (parts.length >= 2) return `خطوبة ${parts[0]} & ${parts[1]}`
+  return names.trim() ? `خطوبة ${names.trim()}` : 'خطوبة يزن & نورا'
 }
 
 export function MomentsExperience({ table }: { table: string | null }) {
@@ -99,7 +124,7 @@ export function MomentsExperience({ table }: { table: string | null }) {
     storyItems.map((item) => item.id),
     viewedIds,
   )
-  const coupleLabel = event ? initialsFrom(event.coupleNames) : 'Y · N'
+  const coupleLabel = event ? coupleInitials(event.coupleNames) : 'Y · N'
   const openStories = () => {
     if (!storyItems.length) return
     setViewerOpen(true)
@@ -140,10 +165,21 @@ export function MomentsExperience({ table }: { table: string | null }) {
       onClose={() => setViewerOpen(false)}
     />
   ) : null
-  const monogram = (
-    <StoryRing state={ring} label={ring === 'none' ? undefined : 'لحظتنا الآن'} onOpen={openStories}>
-      <div className="moments-mono">{coupleLabel}</div>
-    </StoryRing>
+  const brand = (
+    <header className="moments-brand">
+      <StoryRing state={ring} label={ring === 'none' ? undefined : 'لحظتنا الآن'} onOpen={openStories}>
+        <div className="moments-mono">
+          <span dir="ltr">{coupleLabel}</span>
+        </div>
+      </StoryRing>
+      <div className="moments-line" />
+      <p className="moments-engagement">{engagementHeadline(event?.coupleNames ?? '')}</p>
+      {event?.eventDate ? (
+        <p className="moments-gold" dir="ltr">
+          {displayDate(event.eventDate)}
+        </p>
+      ) : null}
+    </header>
   )
 
   const startFlow = (action: 'upload' | 'message') => {
@@ -279,8 +315,7 @@ export function MomentsExperience({ table }: { table: string | null }) {
     return (
       <div className="moments-root" dir="rtl">
         <div className="moments-wrap" style={{ textAlign: 'center' }}>
-          {monogram}
-          <div className="moments-line" />
+          {brand}
           <h1>شكرًا لأنكم كنتم جزءًا من فرحتنا 🤍</h1>
           {event.gallery.length > 0 && (
             <div className="moments-grid two" style={{ marginTop: '2rem' }}>
@@ -324,8 +359,7 @@ export function MomentsExperience({ table }: { table: string | null }) {
       />
 
       <div className="moments-wrap">
-        {monogram}
-        <div className="moments-line" />
+        {brand}
 
         {screen === 'landing' && (
           <section style={{ textAlign: 'center' }}>
@@ -354,11 +388,11 @@ export function MomentsExperience({ table }: { table: string | null }) {
               <>
                 <h1>شاركونا لحظاتكم 🤍</h1>
                 <p className="moments-muted">ساعدونا أن نرى هذه الليلة الجميلة من عيونكم</p>
+                <p className="moments-muted" style={{ marginTop: '0.55rem' }}>
+                  كل صورة، فيديو أو كلمة منكم ستبقى ذكرى جميلة معنا.
+                </p>
               </>
             )}
-            <p className="moments-gold" dir="ltr" style={{ marginTop: '1.4rem' }}>
-              {arabicDate(event.eventDate)}
-            </p>
             <div style={{ marginTop: '2rem', display: 'grid', gap: '0.75rem' }}>
               <button className="moments-btn" type="button" onClick={() => startFlow('upload')}>
                 {guest ? 'أضف لحظة جديدة' : 'شارك لحظتك'}

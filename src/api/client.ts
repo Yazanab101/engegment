@@ -53,42 +53,85 @@ export type InvitationPayload = {
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? ''
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(init?.headers ?? {}),
-    },
-    ...init,
-  })
-  if (!res.ok) {
-    let message = 'Request failed'
-    try {
-      const data = (await res.json()) as { error?: string }
-      message = data.error ?? message
-    } catch {
-      /* ignore */
+const DEFAULT_TIMEOUT_MS = 12_000
+
+async function request<T>(
+  path: string,
+  init?: RequestInit & { timeoutMs?: number },
+): Promise<T> {
+  const { timeoutMs = DEFAULT_TIMEOUT_MS, ...rest } = init ?? {}
+  const controller = new AbortController()
+  const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs)
+
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(rest.headers ?? {}),
+      },
+      ...rest,
+      signal: rest.signal ?? controller.signal,
+    })
+    if (!res.ok) {
+      let message = 'Request failed'
+      try {
+        const data = (await res.json()) as { error?: string }
+        message = data.error ?? message
+      } catch {
+        /* ignore */
+      }
+      throw new Error(message)
     }
-    throw new Error(message)
+    if (res.status === 204) return undefined as T
+    const contentType = res.headers.get('content-type') ?? ''
+    if (contentType.includes('application/json')) return (await res.json()) as T
+    return (await res.text()) as T
+  } catch (err) {
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new Error('Request timed out')
+    }
+    throw err
+  } finally {
+    window.clearTimeout(timeoutId)
   }
-  if (res.status === 204) return undefined as T
-  const contentType = res.headers.get('content-type') ?? ''
-  if (contentType.includes('application/json')) return (await res.json()) as T
-  return (await res.text()) as T
+}
+
+async function requestWithRetry<T>(
+  path: string,
+  init?: RequestInit & { timeoutMs?: number },
+  retries = 1,
+): Promise<T> {
+  let lastError: unknown
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      return await request<T>(path, init)
+    } catch (err) {
+      lastError = err
+      if (attempt === retries) break
+      await new Promise((resolve) => window.setTimeout(resolve, 400 * (attempt + 1)))
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error('Request failed')
 }
 
 export const api = {
-  getInvitation: (token: string) => request<InvitationPayload>(`/api/invitations/${token}`),
+  getInvitation: (token: string) =>
+    requestWithRetry<InvitationPayload>(`/api/invitations/${token}`, { timeoutMs: 10_000 }, 2),
   openInvitation: (token: string) =>
-    request<{ counted: boolean }>(`/api/invitations/${token}/open`, { method: 'POST', body: '{}' }),
+    request<{ counted: boolean }>(`/api/invitations/${token}/open`, {
+      method: 'POST',
+      body: '{}',
+      timeoutMs: 8_000,
+    }),
   submitRsvp: (
     token: string,
     body: { status: 'ATTENDING' | 'NOT_ATTENDING'; guestCount?: number; message?: string | null },
   ) =>
-    request<{ status: RsvpStatus; guestCount: number; message: string | null }>(
+    requestWithRetry<{ status: RsvpStatus; guestCount: number; message: string | null }>(
       `/api/invitations/${token}/rsvp`,
-      { method: 'POST', body: JSON.stringify(body) },
+      { method: 'POST', body: JSON.stringify(body), timeoutMs: 12_000 },
+      1,
     ),
   trackEvent: (token: string, type: 'LOCATION_CLICKED' | 'CALENDAR_CLICKED', metadata?: object) =>
     request(`/api/invitations/${token}/events`, {
@@ -103,6 +146,10 @@ export const api = {
   adminLogout: () => request('/api/admin/auth/logout', { method: 'POST', body: '{}' }),
   adminMe: () => request<{ id: string; email: string; name: string | null }>('/api/admin/auth/me'),
   dashboard: () => request<Record<string, unknown>>('/api/admin/dashboard'),
+  notifications: (limit = 40) =>
+    request<{ items: AdminNotification[]; latestAt: string | null }>(
+      `/api/admin/notifications?limit=${limit}`,
+    ),
   guests: (params: URLSearchParams) =>
     request<{ total: number; page: number; pageSize: number; items: AdminGuest[] }>(
       `/api/admin/guests?${params.toString()}`,
@@ -296,6 +343,20 @@ export type AdminStory = {
   thumbUrl: string | null
   views: number
   uniqueViewers: number
+}
+
+export type AdminNotification = {
+  id: string
+  eventId: string
+  kind: 'attending' | 'not_attending' | 'updated' | 'message' | 'opened'
+  createdAt: string
+  guestId: string
+  guestName: string
+  title: string
+  body: string
+  guestCount: number | null
+  message: string | null
+  href: string
 }
 
 export type AdminGuest = {

@@ -216,7 +216,7 @@ export async function listGuests(query: GuestListQuery) {
       email: g.email,
       language: g.language,
       inviteToken: g.inviteToken,
-      inviteUrl: invitationPublicUrl(g.inviteToken, env.PUBLIC_APP_URL),
+      inviteUrl: invitationPublicUrl(g.inviteToken, env.PUBLIC_APP_URL, g.language),
       isActive: g.isActive,
       inviteSent: g.inviteSent,
       inviteSentAt: g.inviteSentAt,
@@ -365,7 +365,7 @@ export async function regenerateInviteLink(id: string) {
   })
   return {
     inviteToken: guest.inviteToken,
-    inviteUrl: invitationPublicUrl(guest.inviteToken, env.PUBLIC_APP_URL),
+    inviteUrl: invitationPublicUrl(guest.inviteToken, env.PUBLIC_APP_URL, guest.language),
   }
 }
 

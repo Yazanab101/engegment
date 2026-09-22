@@ -1,4 +1,5 @@
 import { type FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { api, type AdminGuest } from '../../api/client'
 import {
   FAMILY_SUFFIX_OPTIONS,
@@ -71,6 +72,7 @@ const emptyForm = {
 }
 
 export function GuestsPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [items, setItems] = useState<AdminGuest[]>([])
   const [total, setTotal] = useState(0)
   const [search, setSearch] = useState('')
@@ -91,6 +93,7 @@ export function GuestsPage() {
   } | null>(null)
   const [copiedWhatsapp, setCopiedWhatsapp] = useState(false)
   const [menuGuestId, setMenuGuestId] = useState<string | null>(null)
+  const [highlightGuestId, setHighlightGuestId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<{ ids: string[]; label: string } | null>(null)
   const [deleteTyped, setDeleteTyped] = useState('')
@@ -101,7 +104,7 @@ export function GuestsPage() {
   const load = useCallback(async () => {
     const params = new URLSearchParams({
       page: '1',
-      pageSize: '100',
+      pageSize: '300',
       sortBy: 'createdAt',
       sortDir: 'desc',
     })
@@ -117,6 +120,34 @@ export function GuestsPage() {
     const id = window.setInterval(() => void load().catch(() => undefined), 25000)
     return () => window.clearInterval(id)
   }, [load])
+
+  useEffect(() => {
+    const guestId = searchParams.get('guest')
+    if (!guestId) return
+    setHighlightGuestId(guestId)
+    const openMessage = searchParams.get('message') === '1'
+    const match = items.find((g) => g.id === guestId)
+    if (!match) return
+
+    requestAnimationFrame(() => {
+      document
+        .querySelector(`[data-guest-id="${guestId}"]`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    })
+
+    if (openMessage && match.message?.trim()) {
+      setMessageGuest(match)
+      setModal('message')
+    }
+
+    setSearchParams({}, { replace: true })
+  }, [searchParams, items, setSearchParams])
+
+  useEffect(() => {
+    if (!highlightGuestId) return
+    const id = window.setTimeout(() => setHighlightGuestId(null), 4000)
+    return () => window.clearTimeout(id)
+  }, [highlightGuestId])
 
   useEffect(() => {
     if (!menuGuestId && !filterOpen) return
@@ -434,7 +465,11 @@ export function GuestsPage() {
           </thead>
           <tbody>
             {items.map((g) => (
-              <tr key={g.id} className={sideRowClass(g)}>
+              <tr
+                key={g.id}
+                data-guest-id={g.id}
+                className={`${sideRowClass(g)}${highlightGuestId === g.id ? ' admin-row-flash' : ''}`}
+              >
                 <td>
                   <input
                     type="checkbox"

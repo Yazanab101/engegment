@@ -1,27 +1,53 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { api, type InvitationPayload } from '../api/client'
 import { InvitationProvider, useInvitation } from '../invitation/InvitationContext'
+import {
+  guessInviteLocale,
+  isRtl,
+  rememberInviteLocale,
+  translate,
+  type LocaleCode,
+} from '../invitation/i18n'
 import { OpeningExperience } from '../components/OpeningExperience'
 import styles from './InvitationPage.module.css'
 
+function localeLangAttr(locale: LocaleCode) {
+  return locale === 'HE' ? 'he' : locale === 'AR' ? 'ar' : 'en'
+}
+
 export function InvitationPage() {
   const { token } = useParams<{ token: string }>()
+  const guessed = useMemo(() => guessInviteLocale(token), [token])
   const [data, setData] = useState<InvitationPayload | null>(null)
-  const [error, setError] = useState(false)
+  const [errorKind, setErrorKind] = useState<'network' | 'invalid' | null>(null)
   const [loading, setLoading] = useState(true)
+  const [retryKey, setRetryKey] = useState(0)
+  const locale = guessed ?? 'EN'
+  const dir = guessed ? (isRtl(guessed) ? 'rtl' : 'ltr') : 'auto'
+  const lang = guessed ? localeLangAttr(guessed) : undefined
 
   useEffect(() => {
     if (!token) return
     let cancelled = false
     ;(async () => {
+      setLoading(true)
+      setErrorKind(null)
       try {
         const payload = await api.getInvitation(token)
         if (cancelled) return
+        rememberInviteLocale(payload.guest.language, token)
         setData(payload)
-        void api.openInvitation(token)
-      } catch {
-        if (!cancelled) setError(true)
+        void api.openInvitation(token).catch(() => undefined)
+      } catch (err) {
+        if (cancelled) return
+        setData(null)
+        const message = err instanceof Error ? err.message.toLowerCase() : ''
+        setErrorKind(
+          message.includes('not found') || message.includes('not available')
+            ? 'invalid'
+            : 'network',
+        )
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -29,18 +55,37 @@ export function InvitationPage() {
     return () => {
       cancelled = true
     }
-  }, [token])
+  }, [token, retryKey])
 
   if (loading) {
     return (
-      <div className={styles.state}>
-        <p>Opening your invitation…</p>
+      <div className={styles.state} dir={dir} lang={lang}>
+        {guessed ? <p>{translate(guessed, 'loading')}</p> : <span className={styles.spinner} />}
       </div>
     )
   }
 
-  if (error || !data || !token) {
-    return <InvalidInvitation />
+  if (errorKind === 'network') {
+    return (
+      <div className={styles.state} dir={dir} lang={lang}>
+        <p>{translate(locale, 'loadError')}</p>
+        <button
+          type="button"
+          className={styles.retry}
+          onClick={() => setRetryKey((k) => k + 1)}
+        >
+          {translate(locale, 'retry')}
+        </button>
+      </div>
+    )
+  }
+
+  if (errorKind === 'invalid' || !data || !token) {
+    return (
+      <div className={styles.state} dir={dir} lang={lang}>
+        <p>{translate(locale, 'invalidInvitation')}</p>
+      </div>
+    )
   }
 
   return (
@@ -49,16 +94,6 @@ export function InvitationPage() {
         <OpeningExperience />
       </InvalidIfNeeded>
     </InvitationProvider>
-  )
-}
-
-function InvalidInvitation() {
-  return (
-    <div className={styles.state} dir="auto">
-      <p>This invitation link is invalid or no longer available.</p>
-      <p>رابط الدعوة غير صالح أو لم يعد متاحاً.</p>
-      <p>קישור ההזמנה אינו תקין או שאינו זמין יותר.</p>
-    </div>
   )
 }
 

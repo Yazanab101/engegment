@@ -2,13 +2,14 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from 'react'
 import type { InvitationPayload, Language, PublicEvent, PublicGuest } from '../api/client'
 import { assets as defaultAssets, invitation as fallbackInvitation } from '../data/invitation'
-import { isRtl, translate, type LocaleCode, type TranslationKey } from './i18n'
+import { isRtl, rememberInviteLocale, translate, type LocaleCode, type TranslationKey } from './i18n'
 
 export type InvitationContent = {
   bride: string
@@ -145,6 +146,10 @@ export function InvitationProvider({
   const [localeOverride, setLocaleOverride] = useState<LocaleCode | null>(null)
 
   const locale: LocaleCode = localeOverride ?? guest?.language ?? 'EN'
+
+  useEffect(() => {
+    if (guest?.language) rememberInviteLocale(guest.language, token)
+  }, [guest?.language, token])
 
   const t = useCallback(
     (key: TranslationKey, vars?: Record<string, string | number>) => translate(locale, key, vars),

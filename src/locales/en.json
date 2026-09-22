@@ -36,6 +36,8 @@
   "parking": "Parking",
   "invalidInvitation": "This invitation link is invalid or no longer available.",
   "loading": "Opening your invitation…",
+  "loadError": "Couldn’t open the invitation. Check your connection and try again.",
+  "retry": "Try again",
   "saveTheDate": "Save the date",
   "tapToOpen": "Tap envelope to open",
   "returnToEnvelope": "Click to return to envelope",
