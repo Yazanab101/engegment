@@ -45,6 +45,7 @@ export function guessInviteLocale(token?: string | null): LocaleCode | null {
   }
   const nav = `${navigator.language} ${(navigator.languages ?? []).join(' ')}`.toLowerCase()
   if (/(^|[\s,_-])(he|iw)/.test(nav) || nav.includes('hebrew')) return 'HE'
+  if (/(^|[\s,_-])ar/.test(nav) || nav.includes('arabic')) return 'AR'
   return null
 }
 

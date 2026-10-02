@@ -189,6 +189,8 @@ export function EnvelopePage({ onOpen, disabled, exiting, skipIntro }: EnvelopeP
             src={assets.envelope}
             alt="Closed invitation envelope"
             draggable={false}
+            decoding="async"
+            fetchPriority="high"
           />
 
           <p
@@ -212,6 +214,8 @@ export function EnvelopePage({ onOpen, disabled, exiting, skipIntro }: EnvelopeP
             alt=""
             aria-hidden
             draggable={false}
+            loading="lazy"
+            decoding="async"
           />
 
           <img
@@ -220,6 +224,8 @@ export function EnvelopePage({ onOpen, disabled, exiting, skipIntro }: EnvelopeP
             alt=""
             aria-hidden
             draggable={false}
+            loading="lazy"
+            decoding="async"
           />
         </motion.div>
       </button>

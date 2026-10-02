@@ -3,6 +3,7 @@ import { InvitationProvider } from './invitation/InvitationContext'
 import { OpeningExperience } from './components/OpeningExperience'
 import { InvitationPage } from './pages/InvitationPage'
 import { MomentsPage } from './pages/MomentsPage'
+import { MomentsQrPage } from './pages/MomentsQrPage'
 import { AdminApp } from './admin/AdminApp'
 import './index.css'
 
@@ -20,6 +21,7 @@ function App() {
       <Route path="/" element={<DemoInvitation />} />
       <Route path="/i/:token" element={<InvitationPage />} />
       <Route path="/moments" element={<MomentsPage />} />
+      <Route path="/moments/qr" element={<MomentsQrPage />} />
       <Route path="/admin/*" element={<AdminApp />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

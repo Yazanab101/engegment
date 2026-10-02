@@ -39,25 +39,41 @@ type Stats = {
 
 export function DashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
   const [sideFilter, setSideFilter] = useState<'all' | 'groom' | 'bride' | 'none'>('all')
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     let alive = true
-    const load = () => {
+    const load = (isInitial = false) => {
+      if (isInitial) {
+        setLoading(true)
+        setError(null)
+      }
       api
         .dashboard()
         .then((data) => {
-          if (alive) setStats(data as Stats)
+          if (!alive) return
+          setStats(data as Stats)
+          setError(null)
         })
-        .catch(() => undefined)
+        .catch((err) => {
+          if (!alive) return
+          // Keep previous stats if a background refresh fails.
+          setError(err instanceof Error ? err.message : 'Failed to load dashboard')
+        })
+        .finally(() => {
+          if (alive) setLoading(false)
+        })
     }
-    load()
-    const id = window.setInterval(load, 25000)
+    load(true)
+    const id = window.setInterval(() => load(false), 60_000)
     return () => {
       alive = false
       window.clearInterval(id)
     }
-  }, [])
+  }, [reloadKey])
 
   const attendingRows = useMemo(() => {
     if (!stats?.attendingGuests) return []
@@ -70,7 +86,29 @@ export function DashboardPage() {
     [attendingRows],
   )
 
-  if (!stats) return <p>Loading dashboard…</p>
+  if (loading && !stats) {
+    return <p>Loading dashboard…</p>
+  }
+
+  if (!stats) {
+    return (
+      <div>
+        <div className="admin-top">
+          <h1>Dashboard</h1>
+        </div>
+        <p className="admin-error">{error ?? 'Could not load dashboard.'}</p>
+        <button
+          type="button"
+          className="admin-btn"
+          onClick={() => {
+            setReloadKey((k) => k + 1)
+          }}
+        >
+          Retry
+        </button>
+      </div>
+    )
+  }
 
   const cards = [
     ['Total invited people', stats.totalInvitedPeople],
@@ -93,6 +131,11 @@ export function DashboardPage() {
     <div>
       <div className="admin-top">
         <h1>Dashboard</h1>
+        {error ? (
+          <button type="button" className="admin-btn secondary" onClick={() => setReloadKey((k) => k + 1)}>
+            Refresh failed — retry
+          </button>
+        ) : null}
       </div>
       <div className="admin-cards">
         {cards.map(([label, value]) => (

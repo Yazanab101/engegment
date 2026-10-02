@@ -12,15 +12,18 @@ export function AdminLayout({
   return (
     <div className="admin-shell">
       <aside className="admin-nav">
-        <strong style={{ padding: '0.35rem 0.75rem', marginBottom: '0.5rem' }}>Engegment</strong>
-        <NavLink to="/admin" end>
-          Dashboard
-        </NavLink>
-        <NavLink to="/admin/guests">Guests</NavLink>
-        <NavLink to="/admin/settings">Event settings</NavLink>
-        <NavLink to="/admin/memories">Memories</NavLink>
-        <NavLink to="/admin/memories/stories">Stories</NavLink>
-        <button className="admin-btn secondary" type="button" onClick={() => void onLogout()} style={{ marginTop: 'auto' }}>
+        <div className="admin-nav-links">
+          <strong className="admin-brand">Engegment</strong>
+          <NavLink to="/admin" end>
+            Dashboard
+          </NavLink>
+          <NavLink to="/admin/guests">Guests</NavLink>
+          <NavLink to="/admin/settings">Event settings</NavLink>
+          <NavLink to="/admin/memories">Memories</NavLink>
+          <NavLink to="/moments/qr">QR</NavLink>
+          <NavLink to="/admin/memories/stories">Stories</NavLink>
+        </div>
+        <button className="admin-btn secondary admin-logout" type="button" onClick={() => void onLogout()}>
           Log out
         </button>
       </aside>

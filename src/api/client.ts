@@ -97,6 +97,24 @@ async function request<T>(
   }
 }
 
+function isRetryableError(err: unknown): boolean {
+  if (!(err instanceof Error)) return true
+  const message = err.message.toLowerCase()
+  if (message.includes('timed out')) return true
+  if (message.includes('network') || message.includes('failed to fetch')) return true
+  // Do not retry client/not-found responses — they only delay the error UI.
+  if (
+    message.includes('not found') ||
+    message.includes('not available') ||
+    message.includes('unauthorized') ||
+    message.includes('validation') ||
+    message.includes('forbidden')
+  ) {
+    return false
+  }
+  return true
+}
+
 async function requestWithRetry<T>(
   path: string,
   init?: RequestInit & { timeoutMs?: number },
@@ -108,8 +126,8 @@ async function requestWithRetry<T>(
       return await request<T>(path, init)
     } catch (err) {
       lastError = err
-      if (attempt === retries) break
-      await new Promise((resolve) => window.setTimeout(resolve, 400 * (attempt + 1)))
+      if (attempt === retries || !isRetryableError(err)) break
+      await new Promise((resolve) => window.setTimeout(resolve, 350 * (attempt + 1)))
     }
   }
   throw lastError instanceof Error ? lastError : new Error('Request failed')
@@ -117,7 +135,7 @@ async function requestWithRetry<T>(
 
 export const api = {
   getInvitation: (token: string) =>
-    requestWithRetry<InvitationPayload>(`/api/invitations/${token}`, { timeoutMs: 10_000 }, 2),
+    requestWithRetry<InvitationPayload>(`/api/invitations/${token}`, { timeoutMs: 8_000 }, 1),
   openInvitation: (token: string) =>
     request<{ counted: boolean }>(`/api/invitations/${token}/open`, {
       method: 'POST',
@@ -145,14 +163,17 @@ export const api = {
     }),
   adminLogout: () => request('/api/admin/auth/logout', { method: 'POST', body: '{}' }),
   adminMe: () => request<{ id: string; email: string; name: string | null }>('/api/admin/auth/me'),
-  dashboard: () => request<Record<string, unknown>>('/api/admin/dashboard'),
+  dashboard: () =>
+    request<Record<string, unknown>>('/api/admin/dashboard', { timeoutMs: 15_000 }),
   notifications: (limit = 40) =>
     request<{ items: AdminNotification[]; latestAt: string | null }>(
       `/api/admin/notifications?limit=${limit}`,
+      { timeoutMs: 10_000 },
     ),
   guests: (params: URLSearchParams) =>
     request<{ total: number; page: number; pageSize: number; items: AdminGuest[] }>(
       `/api/admin/guests?${params.toString()}`,
+      { timeoutMs: 15_000 },
     ),
   createGuest: (body: unknown) =>
     request('/api/admin/guests', { method: 'POST', body: JSON.stringify(body) }),

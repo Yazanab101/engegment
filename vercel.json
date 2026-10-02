@@ -1,4 +1,24 @@
 {
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/audio/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/:path*",
@@ -9,7 +29,7 @@
       "destination": "http://141.136.44.242:4010/uploads/:path*"
     },
     {
-      "source": "/((?!api/|uploads/|assets/|og-image\\.jpg|favicon\\.svg|.*\\..*).*)",
+      "source": "/((?!api/|uploads/|assets/|audio/|og-image\\.jpg|favicon\\.svg|.*\\..*).*)",
       "destination": "/index.html"
     }
   ]

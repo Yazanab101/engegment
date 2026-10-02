@@ -107,14 +107,14 @@ export const layout = {
 } as const satisfies Record<string, LayerCoords>
 
 export const collageAssets = {
-  envelopeBack: '/assets/canva/envelope-open.png',
-  envelopeFront: '/assets/canva/envelope-front-pocket.png',
-  largePhoto: '/assets/canva/couple-photo.png',
-  smallPhoto: '/assets/canva/photo-bw-couple.png',
-  tornNote: '/assets/canva/torn-note.png',
-  topLeftFlowers: '/assets/canva/floral-left.png',
-  topRightFlowers: '/assets/canva/floral-top-right.png',
-  frontFlowers: '/assets/canva/floral-br.png',
-  goldTicket: '/assets/canva/gold-ticket.png',
-  waxSeal: '/assets/canva/MAHKaD_37to.png',
+  envelopeBack: '/assets/canva/envelope-open.webp',
+  envelopeFront: '/assets/canva/envelope-front-pocket.webp',
+  largePhoto: '/assets/canva/couple-photo.webp',
+  smallPhoto: '/assets/canva/photo-bw-couple.webp',
+  tornNote: '/assets/canva/torn-note.webp',
+  topLeftFlowers: '/assets/canva/floral-left.webp',
+  topRightFlowers: '/assets/canva/floral-top-right.webp',
+  frontFlowers: '/assets/canva/floral-br.webp',
+  goldTicket: '/assets/canva/gold-ticket.webp',
+  waxSeal: '/assets/canva/MAHKaD_37to.webp',
 } as const

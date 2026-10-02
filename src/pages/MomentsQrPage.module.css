@@ -1,0 +1,154 @@
+.page {
+  min-height: 100dvh;
+  display: grid;
+  place-content: center;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  background:
+    radial-gradient(ellipse at top, rgba(255, 248, 236, 0.95), transparent 55%),
+    linear-gradient(160deg, #f7f1e8 0%, #efe4d5 45%, #f4ebe0 100%);
+  color: #29120b;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+}
+
+.card {
+  width: min(100%, 420px);
+  margin: 0 auto;
+  background: #fffaf4;
+  border: 1px solid rgba(41, 18, 11, 0.1);
+  border-radius: 22px;
+  padding: 1.4rem 1.25rem 1.5rem;
+  text-align: center;
+  box-shadow: 0 18px 40px rgba(41, 18, 11, 0.08);
+}
+
+.mono {
+  margin: 0;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  color: rgba(41, 18, 11, 0.55);
+}
+
+.line {
+  width: 48px;
+  height: 1px;
+  margin: 0.85rem auto 1rem;
+  background: rgba(41, 18, 11, 0.2);
+}
+
+.kicker,
+.hint {
+  margin: 0;
+  color: rgba(41, 18, 11, 0.62);
+}
+
+.kicker {
+  font-size: 0.95rem;
+  margin-bottom: 0.35rem;
+}
+
+.card h1 {
+  margin: 0.2rem 0 0.55rem;
+  font-weight: 500;
+  font-size: clamp(1.7rem, 4vw, 2.1rem);
+}
+
+.hint {
+  font-size: 0.95rem;
+  line-height: 1.45;
+  margin-bottom: 1rem;
+}
+
+.table {
+  margin: 0.65rem 0 0;
+  font-size: 1.05rem;
+}
+
+.qr {
+  width: min(100%, 280px);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  display: block;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid rgba(41, 18, 11, 0.08);
+}
+
+.url {
+  margin: 0.85rem 0 0;
+  font-size: 0.82rem;
+  color: rgba(41, 18, 11, 0.55);
+  word-break: break-all;
+}
+
+.actions {
+  width: min(100%, 420px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.tableField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  text-align: right;
+  font-size: 0.95rem;
+}
+
+.tableField input {
+  border: 1px solid rgba(41, 18, 11, 0.12);
+  border-radius: 999px;
+  padding: 0.65rem 0.9rem;
+  font: inherit;
+  background: #fffaf4;
+}
+
+.btn,
+.btnQuiet,
+.link {
+  appearance: none;
+  border-radius: 999px;
+  padding: 0.7rem 1rem;
+  font: inherit;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+}
+
+.btn {
+  border: none;
+  background: #29120b;
+  color: #fff8f0;
+}
+
+.btnQuiet {
+  border: 1px solid rgba(41, 18, 11, 0.14);
+  background: transparent;
+  color: #29120b;
+}
+
+.link {
+  border: none;
+  background: transparent;
+  color: rgba(41, 18, 11, 0.7);
+  text-decoration: underline;
+}
+
+@media print {
+  .actions {
+    display: none;
+  }
+
+  .page {
+    background: #fff;
+    padding: 0;
+  }
+
+  .card {
+    box-shadow: none;
+    border: none;
+  }
+}
