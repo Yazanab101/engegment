@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { api } from '../../api/client'
 
 export function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
-  const [email, setEmail] = useState('admin@example.com')
+  const [username, setUsername] = useState('admin')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -13,7 +13,7 @@ export function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
     setLoading(true)
     setError(null)
     try {
-      await api.adminLogin(email, password)
+      await api.adminLogin(username, password)
       onSuccess()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
@@ -28,13 +28,25 @@ export function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
         <h1>Admin</h1>
         <p style={{ margin: 0, color: 'var(--admin-muted)' }}>Wedding invitation dashboard</p>
         <label>
-          Email
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          Username
+          <input
+            type="text"
+            name="username"
+            autoComplete="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            minLength={3}
+            maxLength={32}
+            pattern="[a-zA-Z0-9._-]+"
+          />
         </label>
         <label>
           Password
           <input
             type="password"
+            name="password"
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required

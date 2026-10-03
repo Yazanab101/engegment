@@ -5,7 +5,7 @@ import { AppError } from '../lib/errors.js'
 import { prisma } from '../lib/prisma.js'
 
 export type AuthedRequest = Request & {
-  admin?: { id: string; email: string }
+  admin?: { id: string; username: string; email: string | null }
 }
 
 export async function requireAdmin(req: AuthedRequest, _res: Response, next: NextFunction) {
@@ -27,6 +27,6 @@ export async function requireAdmin(req: AuthedRequest, _res: Response, next: Nex
     return
   }
 
-  req.admin = { id: admin.id, email: admin.email }
+  req.admin = { id: admin.id, username: admin.username, email: admin.email }
   next()
 }

@@ -156,13 +156,19 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ type, metadata }),
     }),
-  adminLogin: (email: string, password: string) =>
-    request<{ id: string; email: string; name: string | null }>('/api/admin/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    }),
+  adminLogin: (username: string, password: string) =>
+    request<{ id: string; username: string; email: string | null; name: string | null }>(
+      '/api/admin/auth/login',
+      {
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
+      },
+    ),
   adminLogout: () => request('/api/admin/auth/logout', { method: 'POST', body: '{}' }),
-  adminMe: () => request<{ id: string; email: string; name: string | null }>('/api/admin/auth/me'),
+  adminMe: () =>
+    request<{ id: string; username: string; email: string | null; name: string | null }>(
+      '/api/admin/auth/me',
+    ),
   dashboard: () =>
     request<Record<string, unknown>>('/api/admin/dashboard', { timeoutMs: 15_000 }),
   notifications: (limit = 40) =>

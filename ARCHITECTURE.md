@@ -33,7 +33,8 @@ Migration: `server/prisma/migrations/20260918125122_init`
 | `CORS_ORIGIN` | Allowed frontend origin(s), comma-separated |
 | `PUBLIC_APP_URL` | Public site URL used in invite/WhatsApp/QR links |
 | `COOKIE_NAME` | Admin session cookie name |
-| `ADMIN_BOOTSTRAP_EMAIL` | First admin email (seed/bootstrap) |
+| `ADMIN_BOOTSTRAP_USERNAME` | First admin username (seed/bootstrap login) |
+| `ADMIN_BOOTSTRAP_EMAIL` | Optional first admin email (contact only) |
 | `ADMIN_BOOTSTRAP_PASSWORD` | First admin password |
 | `OPEN_DEDUP_MINUTES` | Invitation open dedupe window (default 10) |
 
@@ -115,7 +116,7 @@ npm run dev
 - Personalized: http://localhost:5173/i/<token> (copy from Guests table)
 
 Default seed admin (change immediately):
-- email from `ADMIN_BOOTSTRAP_EMAIL`
+- username from `ADMIN_BOOTSTRAP_USERNAME` (default `admin`)
 - password from `ADMIN_BOOTSTRAP_PASSWORD`
 
 Optional Docker Postgres:

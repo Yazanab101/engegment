@@ -8,22 +8,31 @@ import { requireAdmin, type AuthedRequest } from '../middleware/auth.js'
 
 export const authRouter = Router()
 
+const usernameSchema = z
+  .string()
+  .trim()
+  .min(3)
+  .max(32)
+  .regex(/^[a-zA-Z0-9._-]+$/, 'Username may only contain letters, numbers, dots, underscores, and hyphens')
+
 authRouter.post(
   '/login',
   asyncHandler(async (req, res) => {
     const body = z
       .object({
-        email: z.string().email(),
+        username: usernameSchema,
         password: z.string().min(8),
       })
       .parse(req.body)
 
-    const admin = await prisma.adminUser.findUnique({ where: { email: body.email.toLowerCase() } })
+    const admin = await prisma.adminUser.findUnique({
+      where: { username: body.username.toLowerCase() },
+    })
     if (!admin || !(await verifyPassword(admin.passwordHash, body.password))) {
       throw new AppError(401, 'Invalid credentials', 'INVALID_CREDENTIALS')
     }
 
-    const token = await signAdminToken({ sub: admin.id, email: admin.email })
+    const token = await signAdminToken({ sub: admin.id, username: admin.username })
     res.cookie(env.COOKIE_NAME, token, {
       httpOnly: true,
       secure: env.NODE_ENV === 'production',
@@ -32,7 +41,7 @@ authRouter.post(
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/',
     })
-    res.json({ id: admin.id, email: admin.email, name: admin.name })
+    res.json({ id: admin.id, username: admin.username, email: admin.email, name: admin.name })
   }),
 )
 
@@ -49,7 +58,7 @@ authRouter.get(
   requireAdmin,
   asyncHandler(async (req: AuthedRequest, res) => {
     const admin = await prisma.adminUser.findUniqueOrThrow({ where: { id: req.admin!.id } })
-    res.json({ id: admin.id, email: admin.email, name: admin.name })
+    res.json({ id: admin.id, username: admin.username, email: admin.email, name: admin.name })
   }),
 )
 
@@ -57,16 +66,17 @@ authRouter.get(
 export async function ensureBootstrapAdmin() {
   const count = await prisma.adminUser.count()
   if (count > 0) return
-  if (!env.ADMIN_BOOTSTRAP_EMAIL || !env.ADMIN_BOOTSTRAP_PASSWORD) {
+  if (!env.ADMIN_BOOTSTRAP_USERNAME || !env.ADMIN_BOOTSTRAP_PASSWORD) {
     console.warn('No admin users and no ADMIN_BOOTSTRAP_* credentials set')
     return
   }
   await prisma.adminUser.create({
     data: {
-      email: env.ADMIN_BOOTSTRAP_EMAIL.toLowerCase(),
+      username: env.ADMIN_BOOTSTRAP_USERNAME.toLowerCase(),
+      email: env.ADMIN_BOOTSTRAP_EMAIL?.toLowerCase() || null,
       passwordHash: await hashPassword(env.ADMIN_BOOTSTRAP_PASSWORD),
       name: 'Admin',
     },
   })
-  console.log(`Bootstrap admin created: ${env.ADMIN_BOOTSTRAP_EMAIL}`)
+  console.log(`Bootstrap admin created: ${env.ADMIN_BOOTSTRAP_USERNAME}`)
 }
