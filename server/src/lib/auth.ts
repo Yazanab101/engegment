@@ -18,11 +18,11 @@ export async function verifyPassword(hash: string, password: string): Promise<bo
 
 export type AdminSessionPayload = {
   sub: string
-  email: string
+  username: string
 }
 
 export async function signAdminToken(payload: AdminSessionPayload): Promise<string> {
-  return new SignJWT({ email: payload.email })
+  return new SignJWT({ username: payload.username })
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(payload.sub)
     .setIssuedAt()
@@ -33,8 +33,16 @@ export async function signAdminToken(payload: AdminSessionPayload): Promise<stri
 export async function verifyAdminToken(token: string): Promise<AdminSessionPayload | null> {
   try {
     const { payload } = await jwtVerify(token, encoder.encode(env.JWT_SECRET))
-    if (!payload.sub || typeof payload.email !== 'string') return null
-    return { sub: payload.sub, email: payload.email }
+    if (!payload.sub) return null
+    // Prefer username; accept legacy tokens that stored email in the claim.
+    const username =
+      typeof payload.username === 'string'
+        ? payload.username
+        : typeof payload.email === 'string'
+          ? payload.email
+          : null
+    if (!username) return null
+    return { sub: payload.sub, username }
   } catch {
     return null
   }

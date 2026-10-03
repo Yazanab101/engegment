@@ -9,6 +9,13 @@ const envSchema = z.object({
   COOKIE_NAME: z.string().default('engegment_admin_session'),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
   PUBLIC_APP_URL: z.string().url().default('http://localhost:5173'),
+  ADMIN_BOOTSTRAP_USERNAME: z
+    .string()
+    .trim()
+    .min(3)
+    .max(32)
+    .regex(/^[a-zA-Z0-9._-]+$/)
+    .optional(),
   ADMIN_BOOTSTRAP_EMAIL: z.string().email().optional(),
   ADMIN_BOOTSTRAP_PASSWORD: z.string().min(8).optional(),
   OPEN_DEDUP_MINUTES: z.coerce.number().default(10),

@@ -6,14 +6,16 @@ import { generateInviteToken } from '../src/lib/tokens.js'
 const prisma = new PrismaClient()
 
 async function main() {
-  const email = process.env.ADMIN_BOOTSTRAP_EMAIL ?? 'admin@example.com'
+  const username = (process.env.ADMIN_BOOTSTRAP_USERNAME ?? 'admin').toLowerCase()
+  const email = process.env.ADMIN_BOOTSTRAP_EMAIL?.toLowerCase() || null
   const password = process.env.ADMIN_BOOTSTRAP_PASSWORD ?? 'ChangeMeNow!123'
 
   await prisma.adminUser.upsert({
-    where: { email: email.toLowerCase() },
+    where: { username },
     update: {},
     create: {
-      email: email.toLowerCase(),
+      username,
+      email,
       passwordHash: await hashPassword(password),
       name: 'Admin',
     },
@@ -77,7 +79,7 @@ async function main() {
   }
 
   console.log('Seed complete')
-  console.log(`Admin: ${email}`)
+  console.log(`Admin username: ${username}`)
 }
 
 main()

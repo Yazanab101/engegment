@@ -45,7 +45,8 @@ enum GuestTag {
 
 model AdminUser {
   id           String   @id @default(cuid())
-  email        String   @unique
+  username     String   @unique
+  email        String?  @unique
   passwordHash String
   name         String?
   createdAt    DateTime @default(now())
