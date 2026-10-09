@@ -96,18 +96,26 @@ export async function identifyMemoryGuest(input: {
   deviceToken: string
   name: string
   table?: string | null
+  phoneLast4?: string | null
 }) {
   const event = await getCurrentEvent()
   const deviceToken = assertDeviceToken(input.deviceToken)
   const displayName = cleanText(input.name, 60)
   if (!displayName) throw new AppError(400, 'Name is required', 'INVALID_NAME')
   const tableLabel = input.table ? cleanText(input.table, 20) : null
+  const digits = String(input.phoneLast4 || '').replace(/\D/g, '')
+  const phoneLast4 = digits.length >= 4 ? digits.slice(-4) : digits.length ? digits : null
 
   const existing = await prisma.memoryGuest.findUnique({ where: { deviceToken } })
   if (existing) {
     const updated = await prisma.memoryGuest.update({
       where: { id: existing.id },
-      data: { displayName, tableLabel: tableLabel ?? existing.tableLabel, lastSeenAt: new Date() },
+      data: {
+        displayName,
+        tableLabel: tableLabel ?? existing.tableLabel,
+        phoneLast4: phoneLast4 ?? existing.phoneLast4,
+        lastSeenAt: new Date(),
+      },
     })
     return { id: updated.id, displayName: updated.displayName }
   }
@@ -118,6 +126,7 @@ export async function identifyMemoryGuest(input: {
       displayName,
       deviceToken,
       tableLabel,
+      phoneLast4,
     },
   })
   return { id: created.id, displayName: created.displayName }
@@ -544,13 +553,21 @@ export async function adminListGuests(input: {
     where: {
       eventId: event.id,
       ...(input.search
-        ? { displayName: { contains: input.search, mode: 'insensitive' as const } }
+        ? {
+            OR: [
+              { displayName: { contains: input.search, mode: 'insensitive' as const } },
+              ...(input.search.replace(/\D/g, '').slice(-4).length >= 4
+                ? [{ phoneLast4: { contains: input.search.replace(/\D/g, '').slice(-4) } }]
+                : []),
+            ],
+          }
         : {}),
     },
     select: {
       id: true,
       displayName: true,
       tableLabel: true,
+      phoneLast4: true,
       createdAt: true,
       lastSeenAt: true,
     },
@@ -642,6 +659,7 @@ export async function adminListGuests(input: {
     id: guest.id,
     name: guest.displayName,
     table: guest.tableLabel,
+    phoneLast4: guest.phoneLast4,
     photos: photos.get(guest.id) ?? 0,
     videos: videos.get(guest.id) ?? 0,
     messages: messages.get(guest.id) ?? 0,

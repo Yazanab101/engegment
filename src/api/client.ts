@@ -53,7 +53,7 @@ export type InvitationPayload = {
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? ''
 
-const DEFAULT_TIMEOUT_MS = 12_000
+const DEFAULT_TIMEOUT_MS = 25_000
 
 async function request<T>(
   path: string,
@@ -141,7 +141,8 @@ export const api = {
   adminLogin: (email: string, password: string) =>
     request<{ id: string; email: string; name: string | null }>('/api/admin/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email: email.trim(), password }),
+      timeoutMs: 45_000,
     }),
   adminLogout: () => request('/api/admin/auth/logout', { method: 'POST', body: '{}' }),
   adminMe: () => request<{ id: string; email: string; name: string | null }>('/api/admin/auth/me'),

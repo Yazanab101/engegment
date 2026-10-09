@@ -14,6 +14,10 @@
   font-family: 'Cormorant Garamond', 'New Icon', Georgia, serif;
 }
 
+.moments-root[lang='he'] {
+  font-family: 'Noto Sans Hebrew', 'Cormorant Garamond', Georgia, sans-serif;
+}
+
 .moments-wrap {
   max-width: 28rem;
   margin: 0 auto;
@@ -54,6 +58,22 @@
   font-size: 1.35rem;
   font-weight: 500;
   letter-spacing: 0.02em;
+}
+
+.moments-lang {
+  align-self: flex-end;
+  margin: 0 0 0.75rem;
+}
+
+.moments-lang select {
+  min-height: 2.25rem;
+  max-width: 9.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--moments-gold-soft);
+  background: var(--moments-card);
+  color: var(--moments-ink);
+  padding: 0 0.85rem;
+  font-size: 0.75rem;
 }
 
 .moments-brand .moments-gold {
@@ -121,7 +141,19 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.75rem;
-  margin: 1.5rem 0 0;
+  margin: 0.85rem 0 0;
+}
+
+.moments-not-me {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0.85rem 0 0;
+  direction: ltr;
+}
+
+.moments-not-me .moments-link {
+  margin-top: 0;
+  width: auto;
 }
 
 .moments-stats div {
@@ -156,7 +188,7 @@
   height: 6rem;
   object-fit: cover;
   display: block;
-  background: #1c120c;
+  background: #efe8dc;
 }
 
 .moments-thumb.tall img,
@@ -362,7 +394,52 @@
 .moments-mine-card .moments-thumb.tall video,
 .moments-mine-card .moments-thumb.tall .video-poster,
 .moments-mine-card .moments-thumb.tall .moments-video-placeholder {
-  height: 13rem;
+  height: 10rem;
+}
+
+.moments-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1.1rem;
+}
+
+.moments-pager-status {
+  flex: 1;
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--moments-muted);
+}
+
+.moments-pager button:disabled {
+  opacity: 0.4;
+}
+
+.moments-lead-foot {
+  margin-top: 2.75rem;
+  display: grid;
+  gap: 1.6rem;
+  text-align: center;
+}
+
+.moments-btn-lead {
+  min-height: 3rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--moments-gold);
+  background: #fffdf8;
+  color: var(--moments-ink);
+  padding: 0.75rem 1.2rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.moments-copyright {
+  margin: 0 0 0.4rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--moments-muted);
 }
 
 .moments-hint {

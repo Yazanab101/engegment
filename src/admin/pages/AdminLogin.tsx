@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { api } from '../../api/client'
 
 export function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
-  const [email, setEmail] = useState('admin@example.com')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -28,8 +28,15 @@ export function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
         <h1>Admin</h1>
         <p style={{ margin: 0, color: 'var(--admin-muted)' }}>Wedding invitation dashboard</p>
         <label>
-          Email
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          Username
+          <input
+            type="text"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="username"
+            autoCapitalize="none"
+            required
+          />
         </label>
         <label>
           Password

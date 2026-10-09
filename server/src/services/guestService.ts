@@ -3,7 +3,7 @@ import { prisma } from '../lib/prisma.js'
 import { AppError } from '../lib/errors.js'
 import { generateInviteToken, invitationPublicUrl } from '../lib/tokens.js'
 import { env } from '../config/env.js'
-import { getCurrentEvent } from './invitationService.js'
+import { getCurrentEvent, getCurrentEventCached } from './invitationService.js'
 import { escapeCsvCell } from '../lib/sanitize.js'
 import { composeGuestDisplayName } from '../lib/guestDisplayName.js'
 
@@ -43,7 +43,7 @@ function deriveDisplayStatus(guest: Guest & { rsvp: Rsvp | null }) {
 }
 
 export async function getDashboardStats() {
-  const event = await getCurrentEvent()
+  const event = await getCurrentEventCached()
   const guests = await prisma.guest.findMany({
     where: { eventId: event.id },
     include: { rsvp: true },
@@ -133,7 +133,7 @@ export async function getDashboardStats() {
 }
 
 export async function listGuests(query: GuestListQuery) {
-  const event = await getCurrentEvent()
+  const event = await getCurrentEventCached()
   const page = Math.max(1, query.page ?? 1)
   const pageSize = Math.min(100, Math.max(1, query.pageSize ?? 25))
   const sortBy = query.sortBy ?? 'createdAt'

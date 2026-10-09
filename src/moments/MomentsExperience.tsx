@@ -10,13 +10,36 @@ import {
   resetDeviceToken,
   saveDraftCaption,
 } from './guest-session'
-import { prepareFile } from './media-utils'
+import { prepareFileFast } from './media-utils'
 import { memoriesApi, type GuestStoryFeed, type MemoryEvent, type MemoryGuestState } from './api'
 import { VideoPoster } from './VideoPoster'
-import { createUploadQueue, queueStatusLabel, requestGuestSignedUrl, type QueueItem } from './upload-client'
+import { Pager, LazyThumb, slicePage, MINE_PAGE_SIZE, GALLERY_PAGE_SIZE } from './Pager'
+import { createUploadQueue, requestGuestSignedUrl, type QueueItem } from './upload-client'
 import { StoryRing } from './StoryRing'
 import { StoryViewer } from './StoryViewer'
 import { firstUnseenIndex, mergeViewedIds, ringState } from './story-core'
+import {
+  coupleParts,
+  engagementHeadline,
+  momentsDir,
+  readMomentsLanguage,
+  saveMomentsLanguage,
+  type MomentsLang,
+} from './couple-headline'
+import {
+  newClientMessageId,
+  persistOutgoingMessage,
+  resumeQueuedMessages,
+  sendQueuedMessage,
+} from './guest-message-outbox'
+import { LeadPopup, MomentsLeadFooter } from './LeadPopup'
+import {
+  applyGuestDocumentLang,
+  fillCopy,
+  getGuestCopy,
+  GUEST_LANGUAGE_OPTIONS,
+  queueStatusLabel,
+} from './guest-copy'
 import './moments.css'
 
 type Screen = 'landing' | 'upload' | 'success' | 'mine' | 'message' | 'messageSent'
@@ -27,20 +50,9 @@ function displayDate(iso: string) {
   return iso
 }
 
-function coupleParts(names: string) {
-  const parts = names
-    .split(/\s*(?:&|و)\s*/g)
-    .map((part) => part.trim())
-    .filter(Boolean)
-  const yazan = parts.find((part) => /يزن|yazan/i.test(part))
-  const nora = parts.find((part) => /نورا|nora/i.test(part))
-  if (yazan && nora) return [yazan, nora]
-  return parts.slice(0, 2)
-}
-
 function nameInitial(part: string) {
-  if (/يزن|yazan/i.test(part)) return 'Y'
-  if (/نورا|nora/i.test(part)) return 'N'
+  if (/يزن|yazan|יזן/i.test(part)) return 'Y'
+  if (/نورا|nora|נורה/i.test(part)) return 'N'
   const latin = part.match(/[A-Za-z]/)
   if (latin) return latin[0]!.toUpperCase()
   return part.charAt(0) || ''
@@ -48,16 +60,6 @@ function nameInitial(part: string) {
 
 function coupleInitials(names: string) {
   return coupleParts(names).map(nameInitial).filter(Boolean).slice(0, 2).join(' · ') || 'Y · N'
-}
-
-function engagementHeadline(names: string) {
-  const parts = coupleParts(names).map((part) => {
-    if (/يزن|yazan/i.test(part)) return 'يزن'
-    if (/نورا|nora/i.test(part)) return 'نورا'
-    return part
-  })
-  if (parts.length >= 2) return `خطوبة ${parts[0]} & ${parts[1]}`
-  return names.trim() ? `خطوبة ${names.trim()}` : 'خطوبة يزن & نورا'
 }
 
 export function MomentsExperience({ table }: { table: string | null }) {
@@ -69,6 +71,7 @@ export function MomentsExperience({ table }: { table: string | null }) {
   const [caption, setCaption] = useState('')
   const [messageText, setMessageText] = useState('')
   const [name, setName] = useState('')
+  const [phoneLast4, setPhoneLast4] = useState('')
   const [busy, setBusy] = useState(false)
   const [compressing, setCompressing] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
@@ -79,9 +82,24 @@ export function MomentsExperience({ table }: { table: string | null }) {
   const [guestState, setGuestState] = useState<MemoryGuestState | null>(null)
   const [storyFeed, setStoryFeed] = useState<GuestStoryFeed | null>(null)
   const [viewerOpen, setViewerOpen] = useState(false)
+  const [lang, setLang] = useState<MomentsLang>(() => readMomentsLanguage() ?? 'ar')
+  const [minePage, setMinePage] = useState(0)
+  const [galleryPage, setGalleryPage] = useState(0)
+  const [leadOpen, setLeadOpen] = useState(false)
   const cameraRef = useRef<HTMLInputElement>(null)
   const libraryRef = useRef<HTMLInputElement>(null)
   const queueRef = useRef<ReturnType<typeof createUploadQueue> | null>(null)
+  const finalized = useRef(new Set<string>())
+  const copy = getGuestCopy(lang)
+  const dir = momentsDir(lang)
+
+  useEffect(() => {
+    applyGuestDocumentLang(lang)
+    return () => {
+      document.documentElement.lang = 'ar'
+      document.documentElement.dir = 'rtl'
+    }
+  }, [lang])
 
   const showToast = (text: string) => {
     setToast(text)
@@ -112,12 +130,32 @@ export function MomentsExperience({ table }: { table: string | null }) {
       onChange: setItems,
     })
     queueRef.current = queue
+    void queue.restore()
     return () => queue.dispose()
   }, [event?.id, table, token])
+
+  useEffect(() => {
+    if (!token || !event?.id) return
+    void resumeQueuedMessages((input) => memoriesApi.message(token, input.message)).then(() =>
+      refreshGuest(token),
+    )
+  }, [token, event?.id, refreshGuest])
+
+  useEffect(() => {
+    const ready = items.filter(
+      (item) => item.state === 'completed' && item.mediaId && !finalized.current.has(item.mediaId),
+    )
+    if (!ready.length || !token) return
+    const mediaIds = ready.map((item) => item.mediaId!)
+    for (const id of mediaIds) finalized.current.add(id)
+    void memoriesApi.finalize(token, mediaIds, caption || null).then(() => refreshGuest(token))
+  }, [items, token, caption, refreshGuest])
 
   const guest = guestState?.guest ?? null
   const stats = guestState?.stats ?? null
   const myMedia = guestState?.media ?? []
+  const minePaged = slicePage(myMedia, minePage, MINE_PAGE_SIZE)
+  const galleryPaged = slicePage(event?.gallery ?? [], galleryPage, GALLERY_PAGE_SIZE)
   const storyItems = storyFeed?.stories ?? []
   const viewedIds = mergeViewedIds(storyFeed?.viewedIds, readLocalStoryViews())
   const ring = ringState(
@@ -125,6 +163,14 @@ export function MomentsExperience({ table }: { table: string | null }) {
     viewedIds,
   )
   const coupleLabel = event ? coupleInitials(event.coupleNames) : 'Y · N'
+  useEffect(() => {
+    if (minePaged.page !== minePage) setMinePage(minePaged.page)
+  }, [minePaged.page, minePage])
+
+  useEffect(() => {
+    if (galleryPaged.page !== galleryPage) setGalleryPage(galleryPaged.page)
+  }, [galleryPaged.page, galleryPage])
+
   const openStories = () => {
     if (!storyItems.length) return
     setViewerOpen(true)
@@ -160,6 +206,11 @@ export function MomentsExperience({ table }: { table: string | null }) {
         viewedIds,
       )}
       coupleLabel={coupleLabel}
+      dir={dir}
+      locale={lang}
+      closeLabel={copy.storyClose}
+      muteLabel={copy.storyMute}
+      unmuteLabel={copy.storyUnmute}
       getMedia={(storyId) => memoriesApi.storySignedUrl(token || getDeviceToken(), storyId)}
       onViewed={markStorySeen}
       onClose={() => setViewerOpen(false)}
@@ -167,13 +218,33 @@ export function MomentsExperience({ table }: { table: string | null }) {
   ) : null
   const brand = (
     <header className="moments-brand">
-      <StoryRing state={ring} label={ring === 'none' ? undefined : 'لحظتنا الآن'} onOpen={openStories}>
+      <label className="moments-lang">
+        <span className="moments-hidden">{copy.language}</span>
+        <select
+          value={lang}
+          aria-label={copy.language}
+          onChange={(event) => {
+            const next = event.target.value as MomentsLang
+            setLang(next)
+            saveMomentsLanguage(next)
+          }}
+        >
+          {GUEST_LANGUAGE_OPTIONS.map((option) => (
+            <option key={option.id} value={option.id}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <StoryRing state={ring} label={ring === 'none' ? undefined : copy.storyMoment} onOpen={openStories}>
         <div className="moments-mono">
           <span dir="ltr">{coupleLabel}</span>
         </div>
       </StoryRing>
       <div className="moments-line" />
-      <p className="moments-engagement">{engagementHeadline(event?.coupleNames ?? '')}</p>
+      <p className="moments-engagement" lang={lang} dir={momentsDir(lang)}>
+        {engagementHeadline(event?.coupleNames ?? '', lang)}
+      </p>
       {event?.eventDate ? (
         <p className="moments-gold" dir="ltr">
           {displayDate(event.eventDate)}
@@ -195,13 +266,13 @@ export function MomentsExperience({ table }: { table: string | null }) {
     if (!name.trim()) return
     setBusy(true)
     try {
-      const res = await memoriesApi.identify(token, name.trim(), table)
+      const res = await memoriesApi.identify(token, name.trim(), table, phoneLast4.trim() || null)
       cacheGuestName(res.displayName)
       setSheetOpen(false)
       await refreshGuest(token)
       setScreen(pendingAction === 'message' ? 'message' : 'upload')
     } catch {
-      showToast('لم نتمكن من حفظ اسمك، حاول مرة أخرى')
+      showToast(copy.saveNameFailed)
     } finally {
       setBusy(false)
     }
@@ -211,10 +282,9 @@ export function MomentsExperience({ table }: { table: string | null }) {
     if (!fileList?.length) return
     const incoming = Array.from(fileList)
     setCompressing(true)
-    showToast(incoming.some((file) => file.type.startsWith('video/')) ? 'جاري تجهيز الفيديو...' : 'جاري تجهيز الصورة...')
-    const prepared = await Promise.all(incoming.map((file) => prepareFile(file)))
+    const prepared = await Promise.all(incoming.map((file) => prepareFileFast(file)))
     const valid = prepared.filter(Boolean)
-    if (valid.length < incoming.length) showToast('بعض الملفات غير مدعومة أو أكبر من المسموح')
+    if (valid.length < incoming.length) showToast(copy.someFilesUnsupported)
     queueRef.current?.add(
       valid.map((item) => ({
         clientUploadId: item!.id,
@@ -230,7 +300,7 @@ export function MomentsExperience({ table }: { table: string | null }) {
       })),
     )
     setCompressing(false)
-  }, [])
+  }, [copy])
 
   const openMedia = async (mediaId: string, type: string, fallbackUrl?: string | null) => {
     setLightbox({ url: fallbackUrl ?? '', type, loading: true })
@@ -241,100 +311,97 @@ export function MomentsExperience({ table }: { table: string | null }) {
       if (fallbackUrl) setLightbox({ url: fallbackUrl, type, loading: false })
       else {
         setLightbox(null)
-        showToast('تعذّر فتح الملف')
+        showToast(copy.openFileFailed)
       }
     }
   }
 
-  const submitMemory = async () => {
+  const submitMemory = () => {
     const queue = queueRef.current
     if (!queue) return
-    const pending = queue.getItems().filter((item) => item.state !== 'completed')
+    const pending = queue.getItems()
     if (!pending.length && !items.length) {
-      showToast('اختر صورة أو فيديو أولًا')
+      showToast(copy.chooseFileFirst)
       return
     }
-    if (busy) return
-    setBusy(true)
     saveDraftCaption(caption)
-    try {
-      queue.start()
-      await queue.whenIdle()
-      const snapshot = queue.getItems()
-      const ok = snapshot.filter((item) => item.state === 'completed' && item.mediaId).map((item) => item.mediaId!)
-      const failed = snapshot.filter((item) => item.state === 'failed')
-      if (ok.length) await memoriesApi.finalize(token, ok, caption || null)
-      await refreshGuest(token)
-      if (failed.length) showToast('بعض الملفات لم تُرسل، جرّب مرة أخرى')
-      else if (ok.length) {
-        queue.clearCompleted()
-        setCaption('')
-        clearDraftCaption()
-        setScreen('success')
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : ''
-      showToast(
-        message.includes('RATE_LIMITED')
-          ? 'أرسلت الكثير خلال وقت قصير، انتظر قليلًا 🤍'
-          : message.includes('UPLOADS_CLOSED')
-            ? 'انتهى وقت إضافة الذكريات'
-            : 'تعذّر الإرسال، تأكد من الاتصال وحاول مجددًا',
-      )
-    } finally {
-      setBusy(false)
-    }
+    queue.start()
+    clearDraftCaption()
+    setScreen('success')
   }
 
-  const sendMessage = async () => {
-    if (!messageText.trim()) return
-    setBusy(true)
-    try {
-      await memoriesApi.message(token, messageText)
-      setMessageText('')
-      await refreshGuest(token)
-      setScreen('messageSent')
-    } catch {
-      showToast('لم تصل الرسالة، حاول مرة أخرى')
-    } finally {
-      setBusy(false)
-    }
+  const sendMessage = () => {
+    const message = messageText.trim()
+    if (!message || !event) return
+    const clientMessageId = newClientMessageId()
+    setMessageText('')
+    setScreen('messageSent')
+    void persistOutgoingMessage({ clientMessageId, eventId: event.id, message }).then((row) =>
+      sendQueuedMessage(row, (input) => memoriesApi.message(token, input.message)).then(() =>
+        refreshGuest(token),
+      ),
+    )
   }
 
   if (!event) {
     return (
-      <div className="moments-root">
+      <div className="moments-root" dir={dir} lang={lang}>
         <div className="moments-wrap" style={{ textAlign: 'center' }}>
-          جاري التحضير…
+          {copy.preparing}
+          <MomentsLeadFooter copy={copy} onOpen={() => setLeadOpen(true)} />
         </div>
+        <LeadPopup open={leadOpen} copy={copy} lang={lang} dir={dir} onClose={() => setLeadOpen(false)} />
       </div>
     )
   }
 
   if (!event.uploadsOpen) {
     return (
-      <div className="moments-root" dir="rtl">
+      <div className="moments-root" dir={dir} lang={lang}>
         <div className="moments-wrap" style={{ textAlign: 'center' }}>
           {brand}
-          <h1>شكرًا لأنكم كنتم جزءًا من فرحتنا 🤍</h1>
-          {event.gallery.length > 0 && (
-            <div className="moments-grid two" style={{ marginTop: '2rem' }}>
-              {event.gallery.map((item) => (
-                <button key={item.id} className="moments-thumb tall" onClick={() => setLightbox({ url: item.url, type: item.type })}>
-                  {item.type === 'video' ? <VideoPoster src={item.url} /> : <img src={item.url} alt="" />}
-                </button>
-              ))}
-            </div>
+          <h1>{copy.closedTitle}</h1>
+          {galleryPaged.slice.length > 0 && (
+            <>
+              <div className="moments-grid two" style={{ marginTop: '2rem' }}>
+                {galleryPaged.slice.map((item) => (
+                  <button
+                    key={item.id}
+                    className="moments-thumb tall"
+                    type="button"
+                    onClick={() => setLightbox({ url: item.url, type: item.type })}
+                  >
+                    {item.type === 'video' ? (
+                      <div className="moments-video-placeholder" />
+                    ) : (
+                      <LazyThumb src={item.url} />
+                    )}
+                    {item.type === 'video' && <span className="moments-video-badge">{copy.video}</span>}
+                  </button>
+                ))}
+              </div>
+              <Pager
+                page={galleryPaged.page}
+                pages={galleryPaged.pages}
+                copy={copy}
+                onPage={(next) => {
+                  setGalleryPage(next)
+                  window.scrollTo({ top: 0, behavior: 'auto' })
+                }}
+              />
+            </>
           )}
+          <MomentsLeadFooter copy={copy} onOpen={() => setLeadOpen(true)} />
         </div>
-        {lightbox && <Lightbox {...lightbox} onClose={() => setLightbox(null)} />}
+        {lightbox && <Lightbox copy={copy} {...lightbox} onClose={() => setLightbox(null)} />}
         {storyViewer}
+        <LeadPopup open={leadOpen} copy={copy} lang={lang} dir={dir} onClose={() => setLeadOpen(false)} />
       </div>
     )
   }
 
   return (
-    <div className="moments-root" dir="rtl">
+    <div className="moments-root" dir={dir} lang={lang}>
       <input
         ref={cameraRef}
         type="file"
@@ -365,66 +432,66 @@ export function MomentsExperience({ table }: { table: string | null }) {
           <section style={{ textAlign: 'center' }}>
             {guest ? (
               <>
-                <h1>أهلًا من جديد، {guest.displayName} 🤍</h1>
-                <p className="moments-muted">جاهز تضيف لحظة ثانية؟</p>
+                <h1>{fillCopy(copy.welcomeBack, { name: guest.displayName })}</h1>
+                <p className="moments-muted">{copy.readyAnother}</p>
+                <div className="moments-not-me">
+                  <button className="moments-link" type="button" onClick={() => setConfirm({ kind: 'switch' })}>
+                    {copy.notMe}
+                  </button>
+                </div>
                 {stats && (
                   <div className="moments-stats">
                     <div className="moments-card">
                       <strong>{stats.photos}</strong>
-                      <span className="moments-muted">صورة</span>
+                      <span className="moments-muted">{copy.photo}</span>
                     </div>
                     <div className="moments-card">
                       <strong>{stats.videos}</strong>
-                      <span className="moments-muted">فيديو</span>
+                      <span className="moments-muted">{copy.video}</span>
                     </div>
                     <div className="moments-card">
                       <strong>{stats.messages}</strong>
-                      <span className="moments-muted">رسالة</span>
+                      <span className="moments-muted">{copy.message}</span>
                     </div>
                   </div>
                 )}
               </>
             ) : (
               <>
-                <h1>شاركونا لحظاتكم 🤍</h1>
-                <p className="moments-muted">ساعدونا أن نرى هذه الليلة الجميلة من عيونكم</p>
+                <h1>{copy.shareTitle}</h1>
+                <p className="moments-muted">{copy.welcomeLine1}</p>
                 <p className="moments-muted" style={{ marginTop: '0.55rem' }}>
-                  كل صورة، فيديو أو كلمة منكم ستبقى ذكرى جميلة معنا.
+                  {copy.welcomeLine2}
                 </p>
               </>
             )}
             <div style={{ marginTop: '2rem', display: 'grid', gap: '0.75rem' }}>
               <button className="moments-btn" type="button" onClick={() => startFlow('upload')}>
-                {guest ? 'أضف لحظة جديدة' : 'شارك لحظتك'}
+                {guest ? copy.addMoment : copy.shareMoment}
               </button>
               <button className="moments-btn-quiet" type="button" onClick={() => startFlow('message')}>
-                أرسل رسالة للعروسين
+                {copy.sendCoupleMessage}
               </button>
               {guest && (
-                <button className="moments-link" type="button" onClick={() => setScreen('mine')}>
-                  عرض مشاركاتي
+                <button className="moments-link" type="button" onClick={() => { setMinePage(0); setScreen('mine') }}>
+                  {copy.viewMine}
                 </button>
               )}
             </div>
-            {guest && (
-              <button className="moments-link" type="button" onClick={() => setConfirm({ kind: 'switch' })}>
-                هذا ليس أنا
-              </button>
-            )}
           </section>
         )}
 
         {screen === 'upload' && (
           <section>
-            <h2>أهلًا {guest?.displayName ?? ''} 🤍</h2>
-            <p className="moments-muted">شو اللحظة اللي حابب تشاركنا إياها؟</p>
+            <h2>{fillCopy(copy.helloName, { name: guest?.displayName ?? '' })}</h2>
+            <p className="moments-muted">{copy.uploadPrompt}</p>
             <div className="moments-card" style={{ marginTop: '1.25rem' }}>
               <div style={{ display: 'grid', gap: '0.75rem' }}>
                 <button className="moments-btn" type="button" onClick={() => cameraRef.current?.click()}>
-                  التقط صورة أو فيديو
+                  {copy.takePhotoVideo}
                 </button>
                 <button className="moments-btn-quiet" type="button" onClick={() => libraryRef.current?.click()}>
-                  اختر من الهاتف
+                  {copy.chooseFromPhone}
                 </button>
               </div>
               {items.length > 0 && (
@@ -445,8 +512,8 @@ export function MomentsExperience({ table }: { table: string | null }) {
                             <div className="moments-spinner" />
                           </div>
                         )}
-                        {item.mediaType === 'video' && <span className="moments-video-badge">فيديو</span>}
-                        <span className="moments-status">{queueStatusLabel(item)}</span>
+                        {item.mediaType === 'video' && <span className="moments-video-badge">{copy.video}</span>}
+                        <span className="moments-status">{queueStatusLabel(copy, item)}</span>
                         {active && (
                           <div className="moments-load-overlay" aria-hidden>
                             <div className="moments-spinner" />
@@ -468,14 +535,14 @@ export function MomentsExperience({ table }: { table: string | null }) {
                 rows={3}
                 maxLength={600}
                 value={caption}
-                placeholder="كلمة صغيرة من القلب 🤍"
+                placeholder={copy.captionPlaceholder}
                 onChange={(e) => {
                   setCaption(e.target.value)
                   saveDraftCaption(e.target.value)
                 }}
               />
-              <button className="moments-btn" style={{ marginTop: '1rem' }} disabled={busy || compressing} onClick={() => void submitMemory()}>
-                إرسال الذكرى
+              <button className="moments-btn" style={{ marginTop: '1rem' }} disabled={compressing} onClick={() => void submitMemory()}>
+                {copy.sendMemory}
               </button>
               {items.some((item) => item.state === 'failed') && (
                 <button
@@ -486,77 +553,65 @@ export function MomentsExperience({ table }: { table: string | null }) {
                     void submitMemory()
                   }}
                 >
-                  إعادة المحاولة
+                  {copy.retry}
                 </button>
               )}
             </div>
             <button className="moments-link" type="button" onClick={() => setScreen('landing')}>
-              العودة للصفحة الرئيسية
+              {copy.backHome}
             </button>
           </section>
         )}
 
         {screen === 'success' && (
           <section style={{ textAlign: 'center' }}>
-            <h2>وصلتنا ذكراك 🤍</h2>
-            <p className="moments-muted">شكرًا لأنك شاركتنا لحظة من هذه الليلة</p>
+            <h2>{copy.memoryArrived}</h2>
+            <p className="moments-muted">{copy.thanksForMoment}</p>
             <div style={{ marginTop: '2rem', display: 'grid', gap: '0.75rem' }}>
               <button className="moments-btn" type="button" onClick={() => setScreen('upload')}>
-                أضف ذكرى أخرى
+                {copy.addAnotherMemory}
               </button>
               <button className="moments-btn-quiet" type="button" onClick={() => setScreen('message')}>
-                اكتب رسالة
+                {copy.writeMessage}
               </button>
-              <button className="moments-link" type="button" onClick={() => setScreen('mine')}>
-                عرض مشاركاتي
-              </button>
+                <button className="moments-link" type="button" onClick={() => { setMinePage(0); setScreen('mine') }}>
+                  {copy.viewMine}
+                </button>
             </div>
           </section>
         )}
 
         {screen === 'mine' && (
           <section>
-            <h2>ذكرياتي اللي شاركتها</h2>
+            <h2>{copy.myShares}</h2>
             <p className="moments-muted moments-stats-line">
-              {stats ? `${stats.photos} صورة  ·  ${stats.videos} فيديو  ·  ${stats.messages} رسالة` : ''}
+              {stats ? fillCopy(copy.statsLine, { photos: stats.photos, videos: stats.videos, messages: stats.messages }) : ''}
             </p>
             {myMedia.length === 0 ? (
               <p className="moments-muted" style={{ textAlign: 'center', marginTop: '2rem' }}>
-                لم تشارك أي ذكرى بعد 🤍
+                {copy.noMemoriesYet}
               </p>
             ) : (
+              <>
               <div className="moments-mine-list">
-                {myMedia.map((item) => (
+                {minePaged.slice.map((item) => (
                   <article key={item.id} className="moments-card moments-mine-card">
-                    <button className="moments-thumb tall" type="button" onClick={() => void openMedia(item.id, item.type, item.url)}>
+                    <button className="moments-thumb tall" type="button" onClick={() => void openMedia(item.id, item.type, item.thumbUrl ?? item.url)}>
                       {item.type === 'video' ? (
-                        <VideoPoster
-                          src={item.url}
-                          poster={item.thumbUrl}
-                          captureSrc={token ? `/api/media/file/${item.id}?token=${encodeURIComponent(token)}` : null}
-                          onFrame={
-                            item.thumbUrl
-                              ? undefined
-                              : (dataUrl) => {
-                                  void memoriesApi.saveThumb(token, item.id, dataUrl)
-                                }
-                          }
-                        />
-                      ) : item.thumbUrl ? (
-                        <img src={item.thumbUrl} alt="" />
+                        item.thumbUrl ? <LazyThumb src={item.thumbUrl} /> : <div className="moments-video-placeholder" />
                       ) : (
-                        <div className="moments-video-placeholder" />
+                        <LazyThumb src={item.thumbUrl ?? item.url} />
                       )}
-                      {item.type === 'video' && <span className="moments-video-badge">فيديو</span>}
+                      {item.type === 'video' && <span className="moments-video-badge">{copy.video}</span>}
                     </button>
-                    <p className="moments-hint">اضغط الصورة أو الفيديو للمشاهدة</p>
+                    <p className="moments-hint">{copy.storyTapToView}</p>
                     {item.caption && editingCaptionId !== item.id ? (
                       <p className="moments-caption-text">{item.caption}</p>
                     ) : null}
                     {editingCaptionId === item.id ? (
                       <>
                         <label className="moments-label" htmlFor={`caption-${item.id}`}>
-                          كلمة على هذه الذكرى
+                          {copy.captionOnMemory}
                         </label>
                         <textarea
                           id={`caption-${item.id}`}
@@ -564,7 +619,7 @@ export function MomentsExperience({ table }: { table: string | null }) {
                           rows={3}
                           maxLength={600}
                           defaultValue={item.caption ?? ''}
-                          placeholder="اختياري — اكتب كلمة صغيرة من القلب"
+                          placeholder={copy.captionEditPlaceholder}
                           autoFocus
                           onBlur={(e) => {
                             const next = e.target.value.trim()
@@ -576,29 +631,40 @@ export function MomentsExperience({ table }: { table: string | null }) {
                       </>
                     ) : (
                       <button className="moments-btn-quiet moments-btn-small" type="button" onClick={() => setEditingCaptionId(item.id)}>
-                        {item.caption ? 'عدّل الكلمة' : 'أضف كلمة على هذه الذكرى'}
+                        {item.caption ? copy.editCaption : copy.addCaption}
                       </button>
                     )}
                     <button className="moments-delete" type="button" onClick={() => setConfirm({ kind: 'delete', mediaId: item.id })}>
-                      حذف هذه الذكرى
+                      {copy.deleteThisMemory}
                     </button>
                   </article>
                 ))}
               </div>
+              <Pager
+                page={minePaged.page}
+                pages={minePaged.pages}
+                copy={copy}
+                onPage={(next) => {
+                  setEditingCaptionId(null)
+                  setMinePage(next)
+                  window.scrollTo({ top: 0, behavior: 'auto' })
+                }}
+              />
+              </>
             )}
             <button className="moments-btn" style={{ marginTop: '1.4rem' }} type="button" onClick={() => setScreen('upload')}>
-              أضف لحظة جديدة
+              {copy.addMoment}
             </button>
             <button className="moments-link" type="button" onClick={() => setScreen('landing')}>
-              العودة للصفحة الرئيسية
+              {copy.backHome}
             </button>
           </section>
         )}
 
         {screen === 'message' && (
           <section>
-            <h2>اترك كلمة من القلب 🤍</h2>
-            <p className="moments-muted">{guest ? `باسم ${guest.displayName}` : ''}</p>
+            <h2>{copy.leaveWord}</h2>
+            <p className="moments-muted">{guest ? fillCopy(copy.onBehalfOf, { name: guest.displayName }) : ''}</p>
             <textarea
               className="moments-area moments-card"
               style={{ marginTop: '1.2rem' }}
@@ -606,46 +672,59 @@ export function MomentsExperience({ table }: { table: string | null }) {
               maxLength={1000}
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
-              placeholder="كلمة صغيرة من القلب 🤍"
+              placeholder={copy.captionPlaceholder}
             />
-            <button className="moments-btn" style={{ marginTop: '1rem' }} disabled={busy || !messageText.trim()} onClick={() => void sendMessage()}>
-              إرسال الرسالة
+            <button className="moments-btn" style={{ marginTop: '1rem' }} disabled={!messageText.trim()} onClick={() => void sendMessage()}>
+              {copy.sendMessage}
             </button>
             <button className="moments-link" type="button" onClick={() => setScreen('landing')}>
-              العودة للصفحة الرئيسية
+              {copy.backHome}
             </button>
           </section>
         )}
 
         {screen === 'messageSent' && (
           <section style={{ textAlign: 'center' }}>
-            <h2>وصلت رسالتك للعروسين 🤍</h2>
-            <p className="moments-muted">يمكنك إرسال المزيد في أي وقت خلال الحفل</p>
+            <h2>{copy.messageArrived}</h2>
+            <p className="moments-muted">{copy.sendMoreAnytime}</p>
             <div style={{ marginTop: '2rem', display: 'grid', gap: '0.75rem' }}>
               <button className="moments-btn" type="button" onClick={() => setScreen('upload')}>
-                شارك صورة أو فيديو
+                {copy.sharePhotoOrVideo}
               </button>
               <button className="moments-btn-quiet" type="button" onClick={() => setScreen('message')}>
-                اكتب رسالة أخرى
+                {copy.writeAnotherMessage}
               </button>
             </div>
           </section>
         )}
+        <MomentsLeadFooter copy={copy} onOpen={() => setLeadOpen(true)} />
       </div>
 
       {sheetOpen && (
         <>
-          <button className="moments-overlay" type="button" aria-label="إغلاق" onClick={() => setSheetOpen(false)} />
-          <div className="moments-sheet" dir="rtl">
-            <h3>قبل أن نبدأ 🤍</h3>
-            <p className="moments-muted">نحب أن نعرف ممن وصلتنا هذه الذكرى</p>
-            <label style={{ display: 'block', marginTop: '1.1rem' }}>اسمك</label>
+          <button className="moments-overlay" type="button" aria-label={copy.close} onClick={() => setSheetOpen(false)} />
+          <div className="moments-sheet" dir={dir}>
+            <h3>{copy.identifyTitle}</h3>
+            <p className="moments-muted">{copy.identifyBody}</p>
+            <label style={{ display: 'block', marginTop: '1.1rem' }}>{copy.yourName}</label>
             <input className="moments-field" value={name} maxLength={60} autoFocus onChange={(e) => setName(e.target.value)} />
+            <label style={{ display: 'block', marginTop: '0.9rem' }}>
+              {copy.lastFour} <span className="moments-muted">{copy.optional}</span>
+            </label>
+            <input
+              className="moments-field"
+              value={phoneLast4}
+              maxLength={4}
+              inputMode="numeric"
+              autoComplete="off"
+              dir="ltr"
+              onChange={(e) => setPhoneLast4(e.target.value.replace(/\D/g, '').slice(0, 4))}
+            />
             <button className="moments-btn" style={{ marginTop: '1.1rem' }} disabled={busy || !name.trim()} onClick={() => void identify()}>
-              ابدأ
+              {copy.start}
             </button>
             <p className="moments-muted" style={{ textAlign: 'center', marginTop: '0.9rem', fontSize: '0.8rem' }}>
-              سنحفظ اسمك على هذا الجهاز فقط لتجميع ذكرياتك معنا.
+              {copy.namePrivacy}
             </p>
           </div>
         </>
@@ -653,13 +732,15 @@ export function MomentsExperience({ table }: { table: string | null }) {
 
       {confirm && (
         <ConfirmSheet
-          title={confirm.kind === 'delete' ? 'تأكيد الحذف' : 'تأكيد تبديل الضيف'}
+          dir={dir}
+          copy={copy}
+          title={confirm.kind === 'delete' ? copy.confirmDeleteTitle : copy.confirmSwitchTitle}
           body={
             confirm.kind === 'delete'
-              ? 'بدك تحذف هذه الذكرى؟ ما رح تقدر ترجعها بعد الحذف.'
-              : `الجهاز مسجّل الآن باسم ${guest?.displayName ?? 'ضيف'}. إذا اخترت "هذا ليس أنا" رح نفتح جلسة جديدة لشخص ثاني.`
+              ? copy.confirmDeleteBody
+              : fillCopy(copy.confirmSwitchBody, { name: guest?.displayName ?? copy.guestFallback })
           }
-          confirmLabel={confirm.kind === 'delete' ? 'نعم، احذف' : 'نعم، هذا ليس أنا'}
+          confirmLabel={confirm.kind === 'delete' ? copy.confirmDelete : copy.confirmNotMe}
           busy={busy}
           onClose={() => setConfirm(null)}
           onConfirm={async () => {
@@ -669,9 +750,9 @@ export function MomentsExperience({ table }: { table: string | null }) {
                 await memoriesApi.remove(token, confirm.mediaId)
                 await refreshGuest(token)
                 setConfirm(null)
-                showToast('تم حذف الذكرى')
+                showToast(copy.deleted)
               } catch {
-                showToast('تعذّر الحذف، حاول مرة أخرى')
+                showToast(copy.deleteFailed)
               } finally {
                 setBusy(false)
               }
@@ -687,9 +768,10 @@ export function MomentsExperience({ table }: { table: string | null }) {
           }}
         />
       )}
-      {lightbox && <Lightbox {...lightbox} onClose={() => setLightbox(null)} />}
+      {lightbox && <Lightbox copy={copy} {...lightbox} onClose={() => setLightbox(null)} />}
       {storyViewer}
       {toast && <div className="moments-toast">{toast}</div>}
+      <LeadPopup open={leadOpen} copy={copy} lang={lang} dir={dir} onClose={() => setLeadOpen(false)} />
     </div>
   )
 }
@@ -699,6 +781,8 @@ function ConfirmSheet({
   body,
   confirmLabel,
   busy,
+  copy,
+  dir,
   onClose,
   onConfirm,
 }: {
@@ -706,13 +790,15 @@ function ConfirmSheet({
   body: string
   confirmLabel: string
   busy: boolean
+  copy: { close: string; cancel: string }
+  dir: 'rtl' | 'ltr'
   onClose: () => void
   onConfirm: () => void | Promise<void>
 }) {
   return (
     <>
-      <button className="moments-overlay" type="button" aria-label="إغلاق" onClick={onClose} />
-      <div className="moments-sheet" dir="rtl">
+      <button className="moments-overlay" type="button" aria-label={copy.close} onClick={onClose} />
+      <div className="moments-sheet" dir={dir}>
         <h3>{title}</h3>
         <p className="moments-muted" style={{ marginTop: '0.6rem' }}>
           {body}
@@ -722,7 +808,7 @@ function ConfirmSheet({
             {confirmLabel}
           </button>
           <button className="moments-btn-quiet" type="button" disabled={busy} onClick={onClose}>
-            إلغاء
+            {copy.cancel}
           </button>
         </div>
       </div>
@@ -734,11 +820,13 @@ function Lightbox({
   url,
   type,
   loading,
+  copy,
   onClose,
 }: {
   url: string
   type: string
   loading?: boolean
+  copy: { close: string; loadingVideo: string; loading: string }
   onClose: () => void
 }) {
   const [buffering, setBuffering] = useState(type === 'video')
@@ -747,7 +835,7 @@ function Lightbox({
   return (
     <div className="moments-lightbox">
       <button type="button" onClick={onClose} style={{ position: 'absolute', top: '1rem', insetInlineEnd: '1rem', color: '#fff' }}>
-        إغلاق
+        {copy.close}
       </button>
       <div className="moments-lightbox-stage">
         {type === 'video' ? (
@@ -769,7 +857,7 @@ function Lightbox({
         {showLoader && (
           <div className="moments-lightbox-load">
             <div className="moments-spinner lg" />
-            <span>{type === 'video' ? 'جاري تحميل الفيديو...' : 'جاري التحميل...'}</span>
+            <span>{type === 'video' ? copy.loadingVideo : copy.loading}</span>
           </div>
         )}
       </div>

@@ -1,5 +1,14 @@
 import { MAX_CONCURRENT_UPLOADS, isRetryableUploadError } from "./upload-config";
-import { saveUploadMeta, type PersistedUpload } from "./upload-idb";
+import { MAX_RETRY_ATTEMPTS, retryDelay } from "./retry-backoff";
+import {
+  loadUploadBlob,
+  loadUploadMeta,
+  removeUploadBlob,
+  removeUploadMeta,
+  saveUploadBlob,
+  saveUploadMeta,
+  type PersistedUpload,
+} from "./upload-idb";
 
 export type QueueState =
   | "queued"
@@ -34,6 +43,8 @@ export type QueueItem = DirectUploadFile & {
   thumbnailObjectKey: string | null;
   uploadedToR2: boolean;
   mediaId: string | null;
+  attemptCount: number;
+  createdAt: number;
 };
 
 type AuthorizeResponse = {
@@ -79,12 +90,6 @@ export function queueStatusLabel(item: { state: QueueState; progress: number; me
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function backoff(attempt: number) {
-  const base = Math.min(8000, 1000 * 2 ** attempt);
-  const jitter = Math.floor(Math.random() * 250);
-  return base + jitter;
 }
 
 async function parseApi<T>(res: Response): Promise<T> {
@@ -189,9 +194,16 @@ function persist(item: QueueItem, eventId: string, sessionId: string | null) {
     uploadedToR2: item.uploadedToR2,
     confirmed: item.state === "completed",
     error: item.error,
+    attemptCount: item.attemptCount,
+    createdAt: item.createdAt,
     updatedAt: Date.now(),
   };
   void saveUploadMeta(row);
+  if (item.state === "completed") {
+    void removeUploadBlob(item.clientUploadId);
+    return;
+  }
+  if (item.state !== "failed") void saveUploadBlob(item.clientUploadId, item.file);
 }
 
 export function createUploadQueue(options: {
@@ -207,7 +219,13 @@ export function createUploadQueue(options: {
   let running = 0;
   let stopped = false;
   let started = false;
-  let online = typeof navigator === "undefined" ? true : navigator.onLine;
+  const isOnline = () => {
+    if (typeof navigator === "undefined") return true;
+    if (typeof navigator.onLine !== "boolean") return true;
+    return navigator.onLine;
+  };
+  let online = isOnline();
+  const inFlight = new Set<string>();
 
   const emit = () => options.onChange([...items]);
 
@@ -232,10 +250,10 @@ export function createUploadQueue(options: {
     });
 
   async function processOne(item: QueueItem) {
-    let attempt = 0;
-    while (attempt < 4) {
+    let attempt = item.attemptCount || 0;
+    while (attempt < MAX_RETRY_ATTEMPTS) {
       try {
-        if (!navigator.onLine) {
+        if (!isOnline()) {
           setItem(item.clientUploadId, { state: "waiting_connection" });
           await waitForConnection();
         }
@@ -274,6 +292,7 @@ export function createUploadQueue(options: {
               mediaId: auth.uploadId,
               uploadedToR2: true,
             });
+            void removeUploadMeta(item.clientUploadId);
             return;
           }
 
@@ -306,6 +325,7 @@ export function createUploadQueue(options: {
           mediaId: confirmed.mediaId,
           error: null,
         });
+        void removeUploadMeta(item.clientUploadId);
         return;
       } catch (error) {
         const code = error instanceof Error ? error.message : "FAILED";
@@ -313,13 +333,15 @@ export function createUploadQueue(options: {
           error instanceof Error && "retryable" in error
             ? Boolean((error as { retryable?: boolean }).retryable)
             : isRetryableUploadError(code);
-        if (!retryable || attempt >= 3) {
+        attempt += 1;
+        setItem(item.clientUploadId, { attemptCount: attempt, error: code });
+        item = { ...item, attemptCount: attempt };
+        if (!retryable || attempt >= MAX_RETRY_ATTEMPTS) {
           setItem(item.clientUploadId, { state: "failed", error: code });
           return;
         }
-        attempt += 1;
         setItem(item.clientUploadId, { state: "retrying", error: code });
-        await sleep(backoff(attempt - 1));
+        await sleep(retryDelay(attempt - 1));
       }
     }
   }
@@ -327,13 +349,20 @@ export function createUploadQueue(options: {
   async function pump() {
     if (stopped) return;
     while (running < concurrency) {
-      const next = items.find((item) =>
-        ["queued", "retrying", "waiting_connection"].includes(item.state),
+      const next = items.find(
+        (item) =>
+          ["queued", "retrying", "waiting_connection"].includes(item.state) &&
+          !inFlight.has(item.clientUploadId) &&
+          (item.state !== "waiting_connection" || online),
       );
       if (!next) break;
       running += 1;
-      setItem(next.clientUploadId, { state: next.state === "queued" ? "authorizing" : next.state });
+      inFlight.add(next.clientUploadId);
+      setItem(next.clientUploadId, {
+        state: next.state === "queued" || next.state === "retrying" ? "authorizing" : next.state,
+      });
       void processOne(next).finally(() => {
+        inFlight.delete(next.clientUploadId);
         running -= 1;
         void pump();
       });
@@ -367,30 +396,82 @@ export function createUploadQueue(options: {
     getItems: () => items,
     getSessionId: () => sessionId,
     add(files: DirectUploadFile[]) {
-      const incoming: QueueItem[] = files.map((file) => ({
-        ...file,
-        state: "queued",
-        progress: 0,
-        error: null,
-        uploadId: null,
-        objectKey: null,
-        thumbnailObjectKey: null,
-        uploadedToR2: false,
-        mediaId: null,
-      }));
+      const seen = new Set(items.map((item) => item.clientUploadId));
+      const incoming: QueueItem[] = files
+        .filter((file) => {
+          if (seen.has(file.clientUploadId)) return false;
+          seen.add(file.clientUploadId);
+          return true;
+        })
+        .map((file) => ({
+          ...file,
+          state: "queued" as const,
+          progress: 0,
+          error: null,
+          uploadId: null,
+          objectKey: null,
+          thumbnailObjectKey: null,
+          uploadedToR2: false,
+          mediaId: null,
+          attemptCount: 0,
+          createdAt: Date.now(),
+        }));
+      if (!incoming.length) return;
       items = [...items, ...incoming];
+      for (const item of incoming) persist(item, options.eventId(), sessionId);
       emit();
-      if (started) void pump();
+      started = true;
+      void pump();
+    },
+    async restore() {
+      const rows = await loadUploadMeta();
+      const restored: QueueItem[] = [];
+      for (const row of rows) {
+        if (row.confirmed) {
+          void removeUploadMeta(row.clientUploadId);
+          continue;
+        }
+        const blob = await loadUploadBlob(row.clientUploadId);
+        if (!blob && !row.uploadedToR2) continue;
+        const file = blob ?? new Blob([], { type: row.mimeType });
+        restored.push({
+          clientUploadId: row.clientUploadId,
+          file,
+          thumb: null,
+          previewUrl: file.type.startsWith("image/") ? URL.createObjectURL(file) : "",
+          originalFilename: row.originalFilename,
+          mimeType: row.mimeType,
+          mediaType: row.mediaType,
+          state: "queued",
+          progress: row.uploadedToR2 ? 92 : 0,
+          error: null,
+          uploadId: row.uploadId,
+          objectKey: row.objectKey,
+          thumbnailObjectKey: row.thumbnailObjectKey,
+          uploadedToR2: row.uploadedToR2,
+          mediaId: null,
+          attemptCount: row.attemptCount ?? 0,
+          createdAt: row.createdAt ?? row.updatedAt,
+        });
+        if (row.uploadSessionId) sessionId = row.uploadSessionId;
+      }
+      if (!restored.length) return;
+      items = [...restored, ...items];
+      emit();
+      started = true;
+      void pump();
     },
     remove(clientUploadId: string) {
       const current = items.find((item) => item.clientUploadId === clientUploadId);
       if (current && ["uploading", "authorizing", "confirming"].includes(current.state)) return;
       items = items.filter((item) => item.clientUploadId !== clientUploadId);
+      void removeUploadMeta(clientUploadId);
       emit();
     },
     start() {
       stopped = false;
       started = true;
+      online = isOnline();
       if (!online) {
         items = items.map((item) =>
           item.state === "queued" ? { ...item, state: "waiting_connection" } : item,
@@ -422,6 +503,7 @@ export function createUploadQueue(options: {
     },
     dispose() {
       stopped = true;
+      void started;
       if (typeof window !== "undefined") {
         window.removeEventListener("online", onOnline);
         window.removeEventListener("offline", onOffline);

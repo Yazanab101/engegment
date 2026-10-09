@@ -1,7 +1,7 @@
 import type { InvitationEventType, Prisma } from '@prisma/client'
 import { prisma } from '../lib/prisma.js'
 import { composeGuestDisplayName } from '../lib/guestDisplayName.js'
-import { getCurrentEvent } from './invitationService.js'
+import { getCurrentEventCached } from './invitationService.js'
 
 const NOTIFICATION_TYPES: InvitationEventType[] = [
   'RSVP_ATTENDING',
@@ -40,8 +40,8 @@ export async function listAdminNotifications(limit = 40): Promise<{
   items: AdminNotification[]
   latestAt: string | null
 }> {
-  const event = await getCurrentEvent()
-  const take = Math.min(100, Math.max(1, limit))
+  const event = await getCurrentEventCached()
+  const take = Math.min(50, Math.max(1, limit))
 
   const rows = await prisma.invitationEvent.findMany({
     where: {
@@ -62,7 +62,7 @@ export async function listAdminNotifications(limit = 40): Promise<{
       },
     },
     orderBy: { createdAt: 'desc' },
-    take: take * 2,
+    take,
   })
 
   const items: AdminNotification[] = []

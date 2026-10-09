@@ -13,7 +13,7 @@ authRouter.post(
   asyncHandler(async (req, res) => {
     const body = z
       .object({
-        email: z.string().email(),
+        email: z.string().trim().min(1).max(200),
         password: z.string().min(8),
       })
       .parse(req.body)
@@ -69,4 +69,14 @@ export async function ensureBootstrapAdmin() {
     },
   })
   console.log(`Bootstrap admin created: ${env.ADMIN_BOOTSTRAP_EMAIL}`)
+}
+
+export async function ensureLiveDashAdmin() {
+  const password = process.env.LIVE_DASH_PASS
+  if (!password) return
+  const email = 'yazan'
+  const existing = await prisma.adminUser.findUnique({ where: { email }, select: { id: true } })
+  if (existing) return
+  const passwordHash = await hashPassword(password)
+  await prisma.adminUser.create({ data: { email, passwordHash, name: 'Yazan' } })
 }

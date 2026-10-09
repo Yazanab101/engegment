@@ -104,7 +104,7 @@ export function GuestsPage() {
   const load = useCallback(async () => {
     const params = new URLSearchParams({
       page: '1',
-      pageSize: '300',
+      pageSize: '100',
       sortBy: 'createdAt',
       sortDir: 'desc',
     })
@@ -117,7 +117,7 @@ export function GuestsPage() {
 
   useEffect(() => {
     void load().catch((err) => setError(err instanceof Error ? err.message : 'Failed'))
-    const id = window.setInterval(() => void load().catch(() => undefined), 25000)
+    const id = window.setInterval(() => void load().catch(() => undefined), 60_000)
     return () => window.clearInterval(id)
   }, [load])
 

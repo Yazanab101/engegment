@@ -19,6 +19,7 @@ export function AdminLayout({
         <NavLink to="/admin/guests">Guests</NavLink>
         <NavLink to="/admin/settings">Event settings</NavLink>
         <NavLink to="/admin/memories">Memories</NavLink>
+        <NavLink to="/moments/qr">QR</NavLink>
         <NavLink to="/admin/memories/stories">Stories</NavLink>
         <button className="admin-btn secondary" type="button" onClick={() => void onLogout()} style={{ marginTop: 'auto' }}>
           Log out

@@ -21,6 +21,10 @@ export function StoryViewer({
   startIndex = 0,
   coupleLabel,
   dir = 'rtl',
+  locale = 'ar',
+  closeLabel = 'إغلاق',
+  muteLabel = 'كتم الصوت',
+  unmuteLabel = 'تشغيل الصوت',
   getMedia,
   onViewed,
   onClose,
@@ -29,6 +33,10 @@ export function StoryViewer({
   startIndex?: number
   coupleLabel: string
   dir?: 'rtl' | 'ltr'
+  locale?: string
+  closeLabel?: string
+  muteLabel?: string
+  unmuteLabel?: string
   getMedia: (storyId: string) => Promise<MediaPayload>
   onViewed?: (storyId: string) => void
   onClose: () => void
@@ -265,7 +273,7 @@ export function StoryViewer({
   }
 
   const timestamp = story
-    ? new Date(story.createdAt).toLocaleString('ar', { hour: '2-digit', minute: '2-digit' })
+    ? new Date(story.createdAt).toLocaleString(locale, { hour: '2-digit', minute: '2-digit' })
     : ''
 
   if (!story) return null
@@ -292,7 +300,7 @@ export function StoryViewer({
             </p>
             <p className="story-viewer-time">{timestamp}</p>
           </div>
-          <button type="button" aria-label="إغلاق" onClick={close} className="story-viewer-close">
+          <button type="button" aria-label={closeLabel} onClick={close} className="story-viewer-close">
             ×
           </button>
         </div>
@@ -339,7 +347,7 @@ export function StoryViewer({
         <button
           type="button"
           onClick={toggleMute}
-          aria-label={muted ? 'تشغيل الصوت' : 'كتم الصوت'}
+          aria-label={muted ? unmuteLabel : muteLabel}
           className="story-viewer-mute"
         >
           {muted ? '🔇' : '🔊'}

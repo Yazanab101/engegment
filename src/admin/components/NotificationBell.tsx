@@ -51,7 +51,7 @@ export function NotificationBell() {
 
   useEffect(() => {
     void load().catch(() => undefined)
-    const id = window.setInterval(() => void load().catch(() => undefined), 15000)
+    const id = window.setInterval(() => void load().catch(() => undefined), 45_000)
     return () => window.clearInterval(id)
   }, [load])
 

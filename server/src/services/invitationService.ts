@@ -9,6 +9,21 @@ export async function getCurrentEvent() {
   return event
 }
 
+let currentEventCache: { event: Awaited<ReturnType<typeof getCurrentEvent>>; at: number } | null = null
+
+export async function getCurrentEventCached(ttlMs = 30_000) {
+  if (currentEventCache && Date.now() - currentEventCache.at < ttlMs) {
+    return currentEventCache.event
+  }
+  const event = await getCurrentEvent()
+  currentEventCache = { event, at: Date.now() }
+  return event
+}
+
+export function clearCurrentEventCache() {
+  currentEventCache = null
+}
+
 export async function findGuestByToken(token: string) {
   return prisma.guest.findUnique({
     where: { inviteToken: token },
@@ -33,7 +48,8 @@ export async function recordInvitationOpen(guestId: string) {
   const now = new Date()
   const windowMs = env.OPEN_DEDUP_MINUTES * 60 * 1000
 
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(
+    async (tx) => {
     const recent = await tx.invitationEvent.findFirst({
       where: {
         guestId,
@@ -67,7 +83,9 @@ export async function recordInvitationOpen(guestId: string) {
     })
 
     return { counted: true as const }
-  })
+    },
+    { maxWait: 10_000, timeout: 15_000 },
+  )
 }
 
 export async function logGuestEvent(

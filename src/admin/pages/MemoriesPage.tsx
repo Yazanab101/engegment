@@ -75,6 +75,9 @@ export function MemoriesPage() {
       <div className="admin-top">
         <h1>Memories</h1>
         <div style={{ display: 'flex', gap: '0.6rem' }}>
+          <Link to="/moments/qr" className="admin-btn secondary">
+            QR code
+          </Link>
           <Link to="/admin/memories/stories" className="admin-btn secondary">
             Stories
           </Link>

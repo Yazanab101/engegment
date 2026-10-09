@@ -22,7 +22,7 @@ import { AppError } from '../lib/errors.js'
 import { buildWhatsAppInviteMessage, whatsappShareUrl } from '../services/whatsappService.js'
 import { invitationPublicUrl } from '../lib/tokens.js'
 import { env } from '../config/env.js'
-import { getCurrentEvent } from '../services/invitationService.js'
+import { getCurrentEvent, clearCurrentEventCache } from '../services/invitationService.js'
 import { composeGuestDisplayName } from '../lib/guestDisplayName.js'
 
 export const adminRouter = Router()
@@ -384,6 +384,7 @@ adminRouter.patch(
       where: { slug: 'current' },
       data,
     })
+    clearCurrentEventCache()
     res.json(event)
   }),
 )

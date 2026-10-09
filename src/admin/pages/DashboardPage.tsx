@@ -52,7 +52,7 @@ export function DashboardPage() {
         .catch(() => undefined)
     }
     load()
-    const id = window.setInterval(load, 25000)
+    const id = window.setInterval(load, 60_000)
     return () => {
       alive = false
       window.clearInterval(id)

@@ -187,6 +187,7 @@ model MemoryGuest {
   displayName String
   deviceToken String   @unique
   tableLabel  String?
+  phoneLast4  String?
   lastSeenAt  DateTime @default(now())
   createdAt   DateTime @default(now())
   sessions    MemoryUploadSession[]

@@ -15,3 +15,9 @@ export function invitationPublicUrl(
     language === 'HE' ? 'he' : language === 'AR' ? 'ar' : language === 'EN' ? 'en' : null
   return lang ? `${url}?lang=${lang}` : url
 }
+
+export function momentsPublicUrl(baseUrl: string, table?: string | null): string {
+  const url = `${baseUrl.replace(/\/$/, '')}/moments`
+  const t = table?.trim().slice(0, 20)
+  return t ? `${url}?t=${encodeURIComponent(t)}` : url
+}

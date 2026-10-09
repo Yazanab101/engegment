@@ -62,10 +62,10 @@ export const memoriesApi = {
       method: 'POST',
       body: JSON.stringify({ deviceToken }),
     }),
-  identify: (deviceToken: string, name: string, table: string | null) =>
+  identify: (deviceToken: string, name: string, table: string | null, phoneLast4?: string | null) =>
     request<{ id: string; displayName: string }>('/api/media/identify', {
       method: 'POST',
-      body: JSON.stringify({ deviceToken, name, table }),
+      body: JSON.stringify({ deviceToken, name, table, phoneLast4 }),
     }),
   finalize: (deviceToken: string, mediaIds: string[], caption: string | null) =>
     request('/api/media/finalize', {

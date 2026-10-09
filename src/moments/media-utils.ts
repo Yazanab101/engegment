@@ -194,6 +194,38 @@ export async function prepareFile(file: File): Promise<PreparedFile | null> {
   };
 }
 
+/** Queue immediately: skip video thumbnail wait and jpeg recompress so send can start now. */
+export async function prepareFileFast(file: File): Promise<PreparedFile | null> {
+  const mime = mimeFromFile(file);
+  const classified = classifyMime(mime);
+  if (!classified) return null;
+  if (classified.kind === "photo" && file.size > IMAGE_MAX_BYTES) return null;
+  if (classified.kind === "video" && file.size > VIDEO_MAX_BYTES) return null;
+
+  const jpegLike =
+    classified.ext === "jpg" ||
+    classified.ext === "webp" ||
+    file.type === "image/jpeg" ||
+    file.type === "image/jpg" ||
+    file.type === "image/webp";
+
+  if (classified.kind === "video" || jpegLike) {
+    return {
+      id: crypto.randomUUID(),
+      file,
+      blob: file,
+      thumb: null,
+      previewUrl: URL.createObjectURL(file),
+      type: classified.kind,
+      duration: null,
+      width: null,
+      height: null,
+    };
+  }
+
+  return prepareFile(file);
+}
+
 export function formatBytes(bytes: number) {
   if (!bytes) return "0 MB";
   const units = ["B", "KB", "MB", "GB"];

@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "http://141.136.44.242:4010/api/:path*"
+      "source": "/api/((?!guest-leads$|live-dash$).*)",
+      "destination": "http://141.136.44.242:4010/api/$1"
     },
     {
       "source": "/uploads/:path*",

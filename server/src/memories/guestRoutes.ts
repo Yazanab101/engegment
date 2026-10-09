@@ -1,6 +1,9 @@
 import { Router } from 'express'
 import { z } from 'zod'
+import QRCode from 'qrcode'
 import { asyncHandler } from '../lib/errors.js'
+import { env } from '../config/env.js'
+import { momentsPublicUrl } from '../lib/tokens.js'
 import { sendR2Body } from './stream.js'
 import {
   authorizeGuestUpload,
@@ -37,6 +40,28 @@ mediaGuestRouter.get(
   }),
 )
 
+mediaGuestRouter.get(
+  '/moments-qr.png',
+  asyncHandler(async (req, res) => {
+    const table = z
+      .string()
+      .max(20)
+      .optional()
+      .parse(Array.isArray(req.query.t) ? req.query.t[0] : req.query.t)
+    const url = momentsPublicUrl(env.PUBLIC_APP_URL, table)
+    const png = await QRCode.toBuffer(url, {
+      type: 'png',
+      width: 1024,
+      margin: 2,
+      errorCorrectionLevel: 'M',
+      color: { dark: '#29120b', light: '#ffffff' },
+    })
+    res.setHeader('Content-Type', 'image/png')
+    res.setHeader('Cache-Control', 'public, max-age=86400')
+    res.send(png)
+  }),
+)
+
 mediaGuestRouter.post(
   '/identify',
   asyncHandler(async (req, res) => {
@@ -45,6 +70,7 @@ mediaGuestRouter.post(
         deviceToken: token,
         name: z.string().min(1).max(60),
         table: z.string().max(20).optional().nullable(),
+        phoneLast4: z.string().max(20).optional().nullable(),
       })
       .parse(req.body)
     res.json(
@@ -53,6 +79,7 @@ mediaGuestRouter.post(
           deviceToken: body.deviceToken,
           name: body.name,
           table: body.table,
+          phoneLast4: body.phoneLast4,
         }),
       ),
     )

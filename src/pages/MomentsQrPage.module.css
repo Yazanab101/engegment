@@ -1,0 +1,162 @@
+.page {
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(176, 138, 74, 0.14), transparent 36%),
+    var(--ivory, #f8f6f2);
+  color: var(--ink-warm, #29120b);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 2rem 1rem 3rem;
+}
+
+.card {
+  width: min(100%, 22rem);
+  background: #fffdf8;
+  border: 1px solid rgba(176, 138, 74, 0.28);
+  border-radius: 28px;
+  padding: 2rem 1.5rem 1.6rem;
+  text-align: center;
+  box-shadow: 0 18px 40px rgba(41, 18, 11, 0.08);
+}
+
+.mono {
+  margin: 0 auto 0.35rem;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(176, 138, 74, 0.28);
+  display: grid;
+  place-items: center;
+  background: #fff;
+  letter-spacing: 0.08em;
+  font-size: 1.1rem;
+}
+
+.line {
+  width: 3.5rem;
+  height: 1px;
+  margin: 0.35rem auto 0.85rem;
+  background: linear-gradient(90deg, transparent, #b08a4a, transparent);
+}
+
+.kicker,
+.hint,
+.table,
+.url {
+  margin: 0;
+  color: #6b574e;
+}
+
+.kicker {
+  font-size: 1.05rem;
+}
+
+.card h1 {
+  margin: 0.45rem 0 0.55rem;
+  font-size: 1.85rem;
+  font-weight: 500;
+}
+
+.hint {
+  line-height: 1.7;
+  font-size: 1rem;
+}
+
+.qr {
+  width: min(72vw, 17.5rem);
+  height: auto;
+  margin: 1.15rem auto 0.35rem;
+  display: block;
+  background: #fff;
+}
+
+.table {
+  margin-top: 0.35rem;
+  font-size: 1.15rem;
+  color: #29120b;
+}
+
+.url {
+  margin-top: 0.55rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  word-break: break-all;
+}
+
+.actions {
+  width: min(100%, 22rem);
+  display: grid;
+  gap: 0.7rem;
+}
+
+.tableField {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.95rem;
+  color: #6b574e;
+}
+
+.tableField input {
+  border: 1px solid rgba(41, 18, 11, 0.14);
+  border-radius: 999px;
+  padding: 0.7rem 1rem;
+  font: inherit;
+  background: #fff;
+  color: inherit;
+  text-align: center;
+}
+
+.btn,
+.btnQuiet,
+.link {
+  font: inherit;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+}
+
+.btn,
+.btnQuiet {
+  border-radius: 999px;
+  padding: 0.8rem 1.1rem;
+}
+
+.btn {
+  border: 0;
+  background: #29120b;
+  color: #fff;
+}
+
+.btnQuiet {
+  border: 1px solid rgba(41, 18, 11, 0.18);
+  background: #fff;
+  color: inherit;
+}
+
+.link {
+  border: 0;
+  background: none;
+  color: #6b574e;
+}
+
+@media print {
+  .page {
+    min-height: auto;
+    padding: 0;
+    background: #fff;
+  }
+
+  .actions {
+    display: none;
+  }
+
+  .card {
+    box-shadow: none;
+    border-radius: 0;
+    width: 100%;
+  }
+}
